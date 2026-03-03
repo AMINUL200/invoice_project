@@ -1,6 +1,21 @@
+// components/layout/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
-import { Menu, ChevronDown, User, LogOut, LayoutDashboard } from "lucide-react";
+import { 
+  Menu, 
+  ChevronDown, 
+  User, 
+  LogOut, 
+  LayoutDashboard,
+  FileText,
+  Building2,
+  Users,
+  ShoppingCart,
+  CreditCard,
+  Settings,
+  HelpCircle,
+  Bell
+} from "lucide-react";
 
 const Navbar = ({ toggleMenu }) => {
   const [scrolled, setScrolled] = useState(false);
@@ -8,10 +23,6 @@ const Navbar = ({ toggleMenu }) => {
   const dropdownRefs = useRef({});
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Dummy logo - replace with your actual logo
-  const logo =
-    "https://via.placeholder.com/150x50/3B82F6/FFFFFF?text=Your+Logo";
 
   // Scroll effect
   useEffect(() => {
@@ -27,65 +38,37 @@ const Navbar = ({ toggleMenu }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Different dummy navigation links
+  // Navigation links with your color schema
   const navLinks = [
     { id: "home", label: "Home", path: "/" },
     {
-      id: "services",
-      label: "Services",
+      id: "features",
+      label: "Features",
       dropdown: [
-        { id: "web-design", label: "Web Design", path: "/services/web-design" },
-        {
-          id: "development",
-          label: "Development",
-          path: "/services/development",
-        },
-        { id: "seo", label: "SEO Optimization", path: "/services/seo" },
-        {
-          id: "marketing",
-          label: "Digital Marketing",
-          path: "/services/digital-marketing",
-        },
+        { id: "invoicing", label: "Smart Invoicing", path: "/features/invoicing" },
+        { id: "payments", label: "Payment Integration", path: "/features/payments" },
+        { id: "analytics", label: "Analytics Dashboard", path: "/features/analytics" },
+        { id: "reports", label: "Financial Reports", path: "/features/reports" },
       ],
     },
     {
-      id: "products",
-      label: "Products",
+      id: "solutions",
+      label: "Solutions",
       dropdown: [
-        { id: "software", label: "Software", path: "/products/software" },
-        { id: "templates", label: "Templates", path: "/products/templates" },
-        { id: "plugins", label: "Plugins", path: "/products/plugins" },
-        {
-          id: "custom",
-          label: "Custom Solutions",
-          dropdown: [
-            {
-              id: "enterprise",
-              label: "Enterprise",
-              path: "/products/custom/enterprise",
-            },
-            {
-              id: "startup",
-              label: "Startup",
-              path: "/products/custom/startup",
-            },
-            {
-              id: "ecommerce",
-              label: "E-commerce",
-              path: "/products/custom/ecommerce",
-            },
-          ],
-        },
+        { id: "small-business", label: "Small Business", path: "/solutions/small-business" },
+        { id: "enterprise", label: "Enterprise", path: "/solutions/enterprise" },
+        { id: "freelancer", label: "Freelancers", path: "/solutions/freelancer" },
+        { id: "accounting", label: "Accounting Firms", path: "/solutions/accounting" },
       ],
     },
     { id: "pricing", label: "Pricing", path: "/pricing" },
-    { id: "blog", label: "Blog", path: "/blog" },
+    { id: "about", label: "About Us", path: "/about" },
     { id: "contact", label: "Contact", path: "/contact" },
   ];
 
-  // Dummy auth state
+  // Auth state - replace with your actual auth logic
   const isAuthenticated = false;
-  const userData = { user_type: 2 };
+  const userData = { user_type: 2 }; // 1: Super Admin, 2: Company Admin, 3: Staff
 
   // Helper functions for dropdown management
   const getParentDropdownId = (dropdownId) => {
@@ -173,7 +156,7 @@ const Navbar = ({ toggleMenu }) => {
       <div key={item.id} className="relative group">
         {hasSubDropdown ? (
           <div
-            className={`flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#ffba00] cursor-pointer transition-colors ${
+            className={`flex items-center justify-between px-4 py-2 text-sm text-[#334155] hover:bg-[#F1F5F9] hover:text-[#2563EB] cursor-pointer transition-colors ${
               level > 1 ? "pl-8" : ""
             }`}
             onClick={() => toggleDropdown(dropdownKey)}
@@ -188,7 +171,7 @@ const Navbar = ({ toggleMenu }) => {
         ) : (
           <RouterLink
             to={item.path}
-            className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-[#ffba00] transition-colors ${
+            className={`block px-4 py-2 text-sm text-[#334155] hover:bg-[#F1F5F9] hover:text-[#2563EB] transition-colors ${
               level > 1 ? "pl-8" : ""
             }`}
             onClick={() => setOpenDropdowns({})}
@@ -198,7 +181,7 @@ const Navbar = ({ toggleMenu }) => {
         )}
 
         {hasSubDropdown && isOpen && (
-          <div className="bg-gray-50 border-l-2 border-[#ffba00] ml-2">
+          <div className="bg-[#F8FAFC] border-l-2 border-[#2563EB] ml-2">
             {item.dropdown.map((subItem) =>
               renderDropdownItem(subItem, level + 1)
             )}
@@ -221,8 +204,8 @@ const Navbar = ({ toggleMenu }) => {
       >
         {hasDropdown ? (
           <div
-            className={`text-gray-700 font-semibold hover:text-[#ffba00] cursor-pointer transition-colors px-2 py-1 flex items-center space-x-1 ${
-              isOpen ? "text-[#ffba00]" : ""
+            className={`text-[#334155] font-medium hover:text-[#2563EB] cursor-pointer transition-colors px-3 py-2 flex items-center space-x-1 ${
+              isOpen ? "text-[#2563EB]" : ""
             }`}
             onClick={() => toggleDropdown(item.id)}
           >
@@ -235,7 +218,9 @@ const Navbar = ({ toggleMenu }) => {
           </div>
         ) : (
           <div
-            className="text-gray-700 font-semibold hover:text-[#ffba00] cursor-pointer transition-colors px-2 py-1 flex items-center space-x-1"
+            className={`text-[#334155] font-medium hover:text-[#2563EB] cursor-pointer transition-colors px-3 py-2 ${
+              location.pathname === item.path ? "text-[#2563EB]" : ""
+            }`}
             onClick={() => handleNavClick(item.path)}
           >
             {item.label}
@@ -243,7 +228,7 @@ const Navbar = ({ toggleMenu }) => {
         )}
 
         {hasDropdown && isOpen && (
-          <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+          <div className="absolute top-full left-0 mt-2 w-64 bg-white border border-[#E2E8F0] rounded-lg shadow-lg z-50">
             <div className="py-2">
               {item.dropdown.map((dropdownItem) =>
                 renderDropdownItem(dropdownItem)
@@ -263,83 +248,130 @@ const Navbar = ({ toggleMenu }) => {
           : "bg-white/90 backdrop-blur-sm py-4"
       }`}
     >
-      <div
-        className="px-8 flex justify-between items-center"
-        style={{ margin: "0 auto" }}
-      >
+      <div className="px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center">
           <div
-            className="text-2xl font-bold text-indigo-600 flex items-center cursor-pointer"
+            className="flex items-center space-x-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            {/* <img
-              src={logo}
-              alt="logo"
-              className="h-8 md:h-10"
-            /> */}
-            {/* Paste SVG below */}
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 48 48"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="24" cy="24" r="20" stroke="#4F46E5" strokeWidth="4" />
-              <path d="M16 24L24 14L32 24L24 34L16 24Z" fill="#4F46E5" />
-            </svg>
-            <h1 className="ml-2 text-xl font-semibold text-gray-800">MySite</h1>
+            <div className="w-10 h-10 bg-[#2563EB] rounded-xl flex items-center justify-center shadow-lg">
+              <FileText className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-xl font-bold text-[#0F172A]">BillSmart</h1>
           </div>
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
+        <nav className="hidden md:flex items-center space-x-2">
           {navLinks.map((item) => renderNavItem(item))}
 
           {/* Auth Buttons */}
           {!isAuthenticated && (
-            <RouterLink
-              to="/login"
-              className="ml-4 bg-[#ffba00] text-white px-6 py-2 rounded-md hover:bg-black transition-all duration-300 flex items-center space-x-2"
-            >
-              <User className="w-4 h-4" />
-              <span>Login</span>
-            </RouterLink>
+            <div className="flex items-center space-x-3 ml-4">
+              <RouterLink
+                to="/login"
+                className="px-4 py-2 border border-[#CBD5E1] rounded-lg text-[#334155] hover:bg-[#F8FAFC] transition-colors font-medium"
+              >
+                Login
+              </RouterLink>
+              <RouterLink
+                to="/register"
+                className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg transition-colors font-medium shadow-md hover:shadow-lg"
+              >
+                Start Free Trial
+              </RouterLink>
+            </div>
           )}
 
-          {isAuthenticated && userData?.user_type === 4 && (
-            <button
-              onClick={handleLogout}
-              className="ml-4 bg-red-500 text-white px-6 py-2 rounded-md hover:bg-black transition-all duration-300 cursor-pointer flex items-center space-x-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
-          )}
+          {isAuthenticated && (
+            <div className="flex items-center space-x-3 ml-4">
+              {/* Notifications */}
+              <button className="relative p-2 text-[#64748B] hover:bg-[#F1F5F9] rounded-lg transition-colors">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full ring-2 ring-white"></span>
+              </button>
 
-          {isAuthenticated && userData?.user_type !== 4 && (
-            <RouterLink
-              to="/dashboard"
-              className="ml-4 bg-[#ffba00] text-white px-6 py-2 rounded-md hover:bg-black transition-all duration-300 flex items-center space-x-2"
-            >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
-            </RouterLink>
+              {/* User Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => toggleDropdown("user-menu")}
+                  className="flex items-center space-x-2 p-1.5 hover:bg-[#F1F5F9] rounded-lg transition-colors"
+                >
+                  <div className="w-8 h-8 bg-[#2563EB] rounded-lg flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="hidden lg:block text-left">
+                    <p className="text-sm font-medium text-[#0F172A]">John Doe</p>
+                    <p className="text-xs text-[#64748B]">
+                      {userData?.user_type === 1 ? 'Super Admin' : 
+                       userData?.user_type === 2 ? 'Company Admin' : 'Staff'}
+                    </p>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-[#64748B]" />
+                </button>
+
+                {openDropdowns["user-menu"] && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-[#E2E8F0] py-1 z-50">
+                    <RouterLink
+                      to="/dashboard"
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-[#334155] hover:bg-[#F8FAFC] transition-colors"
+                      onClick={() => setOpenDropdowns({})}
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      <span>Dashboard</span>
+                    </RouterLink>
+                    <RouterLink
+                      to="/profile"
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-[#334155] hover:bg-[#F8FAFC] transition-colors"
+                      onClick={() => setOpenDropdowns({})}
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Profile</span>
+                    </RouterLink>
+                    <RouterLink
+                      to="/settings"
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-[#334155] hover:bg-[#F8FAFC] transition-colors"
+                      onClick={() => setOpenDropdowns({})}
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Settings</span>
+                    </RouterLink>
+                    <div className="border-t border-[#E2E8F0] my-1"></div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-[#EF4444] hover:bg-[#FEE2E2] transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </nav>
 
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center space-x-4">
+          {isAuthenticated && (
+            <button className="relative p-2 text-[#64748B]">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+          )}
           <button
             onClick={toggleMenu}
-            className="text-gray-700 focus:outline-none cursor-pointer"
+            className="text-[#334155] hover:text-[#2563EB] focus:outline-none cursor-pointer p-2"
             aria-label="Toggle menu"
           >
-            <Menu className="w-8 h-8" />
+            <Menu className="w-6 h-6" />
           </button>
         </div>
       </div>
+
+      {/* Mobile Menu - This will be controlled by parent component */}
+      {/* The actual mobile menu content should be in a separate component */}
     </header>
   );
 };
