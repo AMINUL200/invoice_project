@@ -42,8 +42,8 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPassword/>}/>
-        <Route path="/reset-password" element={<ResetPassword/>}/>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route element={<AppLayout />}>
           <Route index path="/" element={<LandingPage />} />
@@ -70,26 +70,44 @@ const App = () => {
         </Route>
 
         <Route path="/org" element={<AdminLayout />}>
-          <Route path="dashboard" element={<CompanyDashboard/>} />
-          <Route path="profile" element={<OrganizationProfile/>}/>
-          <Route path="settings" element={<HandleOrgSettings/>}/>
+          <Route path="dashboard" element={<CompanyDashboard />} />
+          <Route path="profile" element={<OrganizationProfile />} />
+          <Route path="settings" element={<HandleOrgSettings />} />
 
           {/* Purchase Side */}
-          <Route path="purchase/vendors" element={<HandleVendor/>}/>
-          <Route path="purchase/purchase-orders" element={<HandlePurchaseOrder/>}/>
-          <Route path="purchase/purchase-bills" element={<HandlePurchaseBills/>}/>
-          <Route path="purchase/vendor-credit-notes" element={<HandleVendorCreditNotes/>}/>
+          <Route path="purchase/vendors" element={<HandleVendor />} />
+          <Route
+            path="purchase/purchase-orders"
+            element={<HandlePurchaseOrder />}
+          />
+          <Route
+            path="purchase/purchase-bills"
+            element={<HandlePurchaseBills />}
+          />
+          <Route
+            path="purchase/vendor-credit-notes"
+            element={<HandleVendorCreditNotes />}
+          />
 
           {/* Sales Side */}
-          <Route path="sales/customers" element={<HandleCustomer/>}/>
-          <Route path="sales/quotations" element={<HandleQuotations/>}/>
-          <Route path="sales/proforma-invoices" element={<HandleProformaInvoices/>}/>
-          <Route path="sales/delivery-challans" element={<DeliveryChallans/>}/>
-          <Route path="sales/invoices" element={<HandleInvoices/>}/>
-          <Route path="sales/credit-notes" element={<HandleCreditNotes/>}/>
-          <Route path="invoices/:id/preview" element={<HandleInvoicesDetailPage/>}/>
-          <Route path="sales/debit-notes" element={<HandleDebitNotes/>}/>
+          <Route path="sales/customers" element={<HandleCustomer />} />
+          <Route path="sales/quotations" element={<HandleQuotations />} />
+          <Route
+            path="sales/proforma-invoices"
+            element={<HandleProformaInvoices />}
+          />
+          <Route
+            path="sales/delivery-challans"
+            element={<DeliveryChallans />}
+          />
+          <Route path="sales/invoices" element={<HandleInvoices />} />
+          <Route path="sales/credit-notes" element={<HandleCreditNotes />} />
+          <Route path="sales/debit-notes" element={<HandleDebitNotes />} />
         </Route>
+        <Route
+          path="/org/invoices/:id/preview"
+          element={<HandleInvoicesDetailPage />}
+        />
       </Routes>
     </Router>
   );
