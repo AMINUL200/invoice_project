@@ -1,5 +1,5 @@
 // pages/admin/invoices/[id].jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -18,6 +18,7 @@ import {
 import { api } from "../../../utils/app";
 import toast from "react-hot-toast";
 import { getTemplateById } from "../../../component/templates/invoiceTemplates";
+import { useReactToPrint } from "react-to-print";
 
 const HandleInvoicesDetailPage = () => {
   const { id } = useParams();
@@ -27,6 +28,7 @@ const HandleInvoicesDetailPage = () => {
   const [copySuccess, setCopySuccess] = useState(null);
   const [organizationSettings, setOrganizationSettings] = useState(null);
   const navigate = useNavigate();
+  const printRef = useRef();
 
   // Dummy payment configuration - replace with real data from API
   const paymentConfig = {
@@ -112,9 +114,10 @@ const HandleInvoicesDetailPage = () => {
     }
   };
 
-  const handlePrint = () => {
-    window.open(`/admin/invoices/${invoice.id}/print`, "_blank");
-  };
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `invoice-${id}`,
+  });
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -294,35 +297,19 @@ const HandleInvoicesDetailPage = () => {
 
       {/* Main Content */}
       <main className="p-8">
-        {/* Status Update Buttons (if draft) */}
-        {invoice.status === "draft" && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Clock className="w-5 h-5 text-yellow-600" />
-              <span className="text-sm text-yellow-700">
-                This invoice is in draft mode
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleStatusUpdate}
-                className="px-3 py-1 bg-[#2563EB] text-white rounded-lg text-sm hover:bg-[#1D4ED8]"
-              >
-                Mark as Sent
-              </button>
-            </div>
-          </div>
-        )}
+       
 
         {/* Dynamic Template Rendering */}
-        <TemplateComponent
-          invoice={invoice}
-          paymentConfig={paymentConfig}
-          copySuccess={copySuccess}
-          handleCopy={handleCopy}
-          formatDate={formatDate}
-          formatCurrency={formatCurrency}
-        />
+        <div ref={printRef}>
+          <TemplateComponent
+            invoice={invoice}
+            paymentConfig={paymentConfig}
+            copySuccess={copySuccess}
+            handleCopy={handleCopy}
+            formatDate={formatDate}
+            formatCurrency={formatCurrency}
+          />
+        </div>
       </main>
     </div>
   );

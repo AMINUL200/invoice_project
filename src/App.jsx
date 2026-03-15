@@ -34,6 +34,12 @@ import HandleDebitNotes from "./pages/company/sales/HandleDebitNotes";
 import DeliveryChallans from "./pages/company/sales/DeliveryChallans";
 import HandleInvoicesDetailPage from "./pages/company/sales/HandleInvoicesDetailPage";
 import HandleProformaInvoices from "./pages/company/sales/HandleProformaInvoices";
+import HandleInvoiceTemplate from "./pages/super_admin/invoice_template/HandleInvoiceTemplate";
+import OrganizationSettings from "./pages/super_admin/org_settings/OrganizationSettings";
+import AboutPage from "./pages/about/AboutPage";
+import ContactPage from "./pages/contact/ContactPage";
+import BlogPage from "./pages/blog/BlogPage";
+import BlogDetails from "./pages/blog/BlogDetails";
 
 const App = () => {
   return (
@@ -47,12 +53,17 @@ const App = () => {
 
         <Route element={<AppLayout />}>
           <Route index path="/" element={<LandingPage />} />
+          <Route path="/about" element={<AboutPage/>}/>
+          <Route path="/contact" element={<ContactPage/>}/>
+          <Route path="/blog" element={<BlogPage/>}/>
+          <Route path="/blog/:id" element={<BlogDetails/>}/>
         </Route>
 
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" index element={<AdminDashboard />} />
           <Route path="settings" element={<SystemSettingsPage />} />
+          <Route path="invoice-template" element={<HandleInvoiceTemplate/>}/>
 
           {/* ---------- Start Organization or Companies handle super admin */}
           <Route path="companies" element={<CompaniesPage />} />
@@ -67,6 +78,8 @@ const App = () => {
           <Route path="plans/:id/edit" element={<EditPlanPage />} />
           <Route path="subscriptions" element={<SubscriptionsPage />} />
           {/* --------- End Plans and Subscription ------- */}
+
+          <Route path="org-settings" element={<OrganizationSettings/>}/>
         </Route>
 
         <Route path="/org" element={<AdminLayout />}>

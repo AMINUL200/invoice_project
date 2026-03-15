@@ -1,5 +1,5 @@
 // pages/sales/HandleInvoices.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Plus,
   Search,
@@ -35,18 +35,18 @@ import {
   Tag,
   Maximize2,
   Minimize2,
-  ChevronDown
-} from 'lucide-react';
-import { format } from 'date-fns';
-import { api } from '../../../utils/app';
+  ChevronDown,
+} from "lucide-react";
+import { format } from "date-fns";
+import { api } from "../../../utils/app";
 
 // Invoice Preview Component
 const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'draft': { bg: 'bg-[#E2E8F0]', text: 'text-[#475569]', label: 'Draft' },
-      'sent': { bg: 'bg-[#DBEAFE]', text: 'text-[#1D4ED8]', label: 'Sent' },
-      'paid': { bg: 'bg-[#DCFCE7]', text: 'text-[#15803D]', label: 'Paid' }
+      draft: { bg: "bg-[#E2E8F0]", text: "text-[#475569]", label: "Draft" },
+      sent: { bg: "bg-[#DBEAFE]", text: "text-[#1D4ED8]", label: "Sent" },
+      paid: { bg: "bg-[#DCFCE7]", text: "text-[#15803D]", label: "Paid" },
     };
     return statusConfig[status] || statusConfig.draft;
   };
@@ -58,8 +58,12 @@ const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
       {/* Preview Header */}
       <div className="px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC]">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-[#0F172A]">Invoice Preview</h3>
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusStyle.bg} ${statusStyle.text}`}>
+          <h3 className="text-lg font-semibold text-[#0F172A]">
+            Invoice Preview
+          </h3>
+          <span
+            className={`px-2 py-1 text-xs font-medium rounded-full ${statusStyle.bg} ${statusStyle.text}`}
+          >
             {statusStyle.label}
           </span>
         </div>
@@ -71,7 +75,9 @@ const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h2 className="text-2xl font-bold text-[#0F172A]">INVOICE</h2>
-            <p className="text-sm text-[#64748B] mt-1">{formData.invoice_no || 'INV-001'}</p>
+            <p className="text-sm text-[#64748B] mt-1">
+              {formData.invoice_no || "INV-001"}
+            </p>
           </div>
           {/* <div className="text-right">
             <p className="font-medium text-[#0F172A]">Your Company Name</p>
@@ -83,19 +89,29 @@ const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
 
         {/* Customer Details */}
         <div className="mb-6 p-4 bg-[#F8FAFC] rounded-lg">
-          <p className="text-xs font-medium text-[#64748B] uppercase mb-2">Bill To:</p>
+          <p className="text-xs font-medium text-[#64748B] uppercase mb-2">
+            Bill To:
+          </p>
           {selectedCustomer ? (
             <div className="space-y-1">
-              <p className="font-medium text-[#0F172A]">{selectedCustomer.name}</p>
+              <p className="font-medium text-[#0F172A]">
+                {selectedCustomer.name}
+              </p>
               <p className="text-sm text-[#64748B]">{selectedCustomer.email}</p>
               <p className="text-sm text-[#64748B]">{selectedCustomer.phone}</p>
-              <p className="text-sm text-[#64748B]">{selectedCustomer.billing_address}</p>
+              <p className="text-sm text-[#64748B]">
+                {selectedCustomer.billing_address}
+              </p>
               {selectedCustomer.gstin && (
-                <p className="text-sm text-[#64748B]">GST: {selectedCustomer.gstin}</p>
+                <p className="text-sm text-[#64748B]">
+                  GST: {selectedCustomer.gstin}
+                </p>
               )}
             </div>
           ) : (
-            <p className="text-sm text-[#64748B] italic">Select a customer to preview</p>
+            <p className="text-sm text-[#64748B] italic">
+              Select a customer to preview
+            </p>
           )}
         </div>
 
@@ -104,13 +120,17 @@ const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
           <div>
             <p className="text-xs text-[#64748B]">Invoice Date</p>
             <p className="text-sm font-medium text-[#0F172A]">
-              {formData.invoice_date ? format(new Date(formData.invoice_date), 'dd MMM yyyy') : 'N/A'}
+              {formData.invoice_date
+                ? format(new Date(formData.invoice_date), "dd MMM yyyy")
+                : "N/A"}
             </p>
           </div>
           <div>
             <p className="text-xs text-[#64748B]">Due Date</p>
             <p className="text-sm font-medium text-[#0F172A]">
-              {formData.due_date ? format(new Date(formData.due_date), 'dd MMM yyyy') : 'N/A'}
+              {formData.due_date
+                ? format(new Date(formData.due_date), "dd MMM yyyy")
+                : "N/A"}
             </p>
           </div>
         </div>
@@ -121,20 +141,38 @@ const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
             <table className="w-full text-sm">
               <thead className="bg-[#F1F5F9]">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-[#334155]">Item</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Qty</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Price</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Tax</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Total</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[#334155]">
+                    Item
+                  </th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                    Qty
+                  </th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                    Price
+                  </th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                    Tax
+                  </th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                    Total
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
                 {formData.items.map((item, index) => (
                   <tr key={index}>
-                    <td className="px-3 py-2 text-[#0F172A]">{item.item_name || '-'}</td>
-                    <td className="px-3 py-2 text-right text-[#64748B]">{item.quantity}</td>
-                    <td className="px-3 py-2 text-right text-[#64748B]">{formatCurrency(item.price)}</td>
-                    <td className="px-3 py-2 text-right text-[#64748B]">{item.tax_percent}%</td>
+                    <td className="px-3 py-2 text-[#0F172A]">
+                      {item.item_name || "-"}
+                    </td>
+                    <td className="px-3 py-2 text-right text-[#64748B]">
+                      {item.quantity}
+                    </td>
+                    <td className="px-3 py-2 text-right text-[#64748B]">
+                      {formatCurrency(item.price)}
+                    </td>
+                    <td className="px-3 py-2 text-right text-[#64748B]">
+                      {item.tax_percent}%
+                    </td>
                     <td className="px-3 py-2 text-right font-medium text-[#0F172A]">
                       {formatCurrency(item.total_amount)}
                     </td>
@@ -145,7 +183,9 @@ const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
           </div>
         ) : (
           <div className="mb-6 p-4 bg-[#F8FAFC] rounded-lg text-center">
-            <p className="text-sm text-[#64748B]">Add items to preview invoice</p>
+            <p className="text-sm text-[#64748B]">
+              Add items to preview invoice
+            </p>
           </div>
         )}
 
@@ -155,21 +195,29 @@ const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
             <div className="w-64 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-[#64748B]">Subtotal:</span>
-                <span className="text-[#0F172A]">{formatCurrency(formData.subtotal)}</span>
+                <span className="text-[#0F172A]">
+                  {formatCurrency(formData.subtotal)}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-[#64748B]">Tax:</span>
-                <span className="text-[#0F172A]">{formatCurrency(formData.tax_amount)}</span>
+                <span className="text-[#0F172A]">
+                  {formatCurrency(formData.tax_amount)}
+                </span>
               </div>
               {formData.discount_amount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-[#64748B]">Discount:</span>
-                  <span className="text-[#22C55E]">-{formatCurrency(formData.discount_amount)}</span>
+                  <span className="text-[#22C55E]">
+                    -{formatCurrency(formData.discount_amount)}
+                  </span>
                 </div>
               )}
               <div className="flex justify-between text-base font-bold pt-2 border-t border-[#E2E8F0]">
                 <span className="text-[#0F172A]">Total:</span>
-                <span className="text-[#2563EB]">{formatCurrency(formData.total_amount)}</span>
+                <span className="text-[#2563EB]">
+                  {formatCurrency(formData.total_amount)}
+                </span>
               </div>
             </div>
           </div>
@@ -178,7 +226,9 @@ const InvoicePreview = ({ formData, selectedCustomer, formatCurrency }) => {
         {/* Footer */}
         <div className="mt-6 pt-4 border-t border-[#E2E8F0] text-center">
           <p className="text-xs text-[#64748B]">Thank you for your business!</p>
-          <p className="text-xs text-[#64748B] mt-1">This is a computer generated preview</p>
+          <p className="text-xs text-[#64748B] mt-1">
+            This is a computer generated preview
+          </p>
         </div>
       </div>
     </div>
@@ -189,7 +239,7 @@ const HandleInvoices = () => {
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -198,88 +248,95 @@ const HandleInvoices = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(true); // Set to true by default to show preview
-  
+
   // Customer search states
-  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerSearch, setCustomerSearch] = useState("");
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
-  
+
   const [pagination, setPagination] = useState({
     current_page: 1,
     last_page: 1,
     total: 0,
     per_page: 15,
     from: 0,
-    to: 0
+    to: 0,
   });
 
   // Per page options
   const perPageOptions = [10, 15, 25, 50, 100];
 
   const [formData, setFormData] = useState({
-    customer_id: '',
-    invoice_no: '',
-    invoice_type: 'gst',
-    invoice_date: new Date().toISOString().split('T')[0],
-    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    customer_id: "",
+    invoice_no: "",
+    invoice_type: "gst",
+    invoice_date: new Date().toISOString().split("T")[0],
+    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
     subtotal: 0,
     tax_amount: 0,
     discount_amount: 0,
     total_amount: 0,
-    status: 'draft',
+    status: "draft",
     items: [
       {
-        item_name: '',
+        item_name: "",
         quantity: 1,
         price: 0,
         tax_percent: 18,
         tax_amount: 0,
-        total_amount: 0
-      }
-    ]
+        total_amount: 0,
+      },
+    ],
   });
   const [formErrors, setFormErrors] = useState({});
 
   // Fetch customers list
   const fetchCustomers = useCallback(async () => {
     try {
-      const response = await api.get('/org/customers');
+      const response = await api.get("/org/customers");
       if (response.data && response.data.data) {
         setCustomers(response.data.data.data);
         setFilteredCustomers(response.data.data.data);
       }
     } catch (error) {
-      console.error('Error fetching customers:', error);
+      console.error("Error fetching customers:", error);
     }
   }, []);
 
   // Fetch invoices with pagination
-  const fetchInvoices = useCallback(async (page = 1, perPage = pagination.per_page) => {
-    setLoading(true);
-    setApiError(null);
-    
-    try {
-      const response = await api.get(`/org/invoices?page=${page}&per_page=${perPage}`);
-      
-      if (response.data && response.data.data) {
-        setInvoices(response.data.data);
-        setPagination({
-          current_page: response.data.meta.current_page,
-          last_page: response.data.meta.last_page,
-          total: response.data.meta.total,
-          per_page: response.data.meta.per_page,
-          from: response.data.meta.from,
-          to: response.data.meta.to
-        });
+  const fetchInvoices = useCallback(
+    async (page = 1, perPage = pagination.per_page) => {
+      setLoading(true);
+      setApiError(null);
+
+      try {
+        const response = await api.get(
+          `/org/invoices?page=${page}&per_page=${perPage}`,
+        );
+
+        if (response.data && response.data.data) {
+          setInvoices(response.data.data);
+          setPagination({
+            current_page: response.data.meta.current_page,
+            last_page: response.data.meta.last_page,
+            total: response.data.meta.total,
+            per_page: response.data.meta.per_page,
+            from: response.data.meta.from,
+            to: response.data.meta.to,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching invoices:", error);
+        setApiError(error.message || "Failed to fetch invoices");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching invoices:', error);
-      setApiError(error.message || 'Failed to fetch invoices');
-    } finally {
-      setLoading(false);
-    }
-  }, [pagination.per_page]);
+    },
+    [pagination.per_page],
+  );
 
   // Initial fetch
   useEffect(() => {
@@ -290,7 +347,7 @@ const HandleInvoices = () => {
   // Handle select all
   useEffect(() => {
     if (selectAll) {
-      setSelectedRows(invoices.map(i => i.id));
+      setSelectedRows(invoices.map((i) => i.id));
     } else {
       setSelectedRows([]);
     }
@@ -298,61 +355,69 @@ const HandleInvoices = () => {
 
   // Handle customer search
   useEffect(() => {
-    if (customerSearch.trim() === '') {
+    if (customerSearch.trim() === "") {
       setFilteredCustomers(customers);
     } else {
-      const filtered = customers.filter(customer =>
-        customer.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-        customer.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
-        customer.phone.includes(customerSearch)
+      const filtered = customers.filter(
+        (customer) =>
+          customer.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+          customer.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
+          customer.phone.includes(customerSearch),
       );
       setFilteredCustomers(filtered);
     }
   }, [customerSearch, customers]);
 
   const calculateItemTotals = (items) => {
-    return items.map(item => {
+    return items.map((item) => {
       const quantity = parseFloat(item.quantity) || 0;
       const price = parseFloat(item.price) || 0;
       const taxPercent = parseFloat(item.tax_percent) || 0;
-      
+
       const subtotal = quantity * price;
       const taxAmount = (subtotal * taxPercent) / 100;
       const totalAmount = subtotal + taxAmount;
-      
+
       return {
         ...item,
         tax_amount: taxAmount,
-        total_amount: totalAmount
+        total_amount: totalAmount,
       };
     });
   };
 
   const calculateInvoiceTotals = (items, discount = 0) => {
-    const subtotal = items.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0), 0);
-    const taxAmount = items.reduce((sum, item) => sum + (parseFloat(item.tax_amount) || 0), 0);
+    const subtotal = items.reduce(
+      (sum, item) =>
+        sum + (parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0),
+      0,
+    );
+    const taxAmount = items.reduce(
+      (sum, item) => sum + (parseFloat(item.tax_amount) || 0),
+      0,
+    );
     const discountAmount = parseFloat(discount) || 0;
     const total = subtotal + taxAmount - discountAmount;
-    
+
     return {
       subtotal,
       tax_amount: taxAmount,
-      total_amount: total
+      total_amount: total,
     };
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Clear error for this field
     if (formErrors[name]) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -360,67 +425,73 @@ const HandleInvoices = () => {
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...formData.items];
     updatedItems[index][field] = value;
-    
+
     // Recalculate item totals
     const calculatedItems = calculateItemTotals(updatedItems);
-    
+
     // Recalculate invoice totals
-    const totals = calculateInvoiceTotals(calculatedItems, formData.discount_amount);
-    
-    setFormData(prev => ({
+    const totals = calculateInvoiceTotals(
+      calculatedItems,
+      formData.discount_amount,
+    );
+
+    setFormData((prev) => ({
       ...prev,
       items: calculatedItems,
-      ...totals
+      ...totals,
     }));
   };
 
   const addItem = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       items: [
         ...prev.items,
         {
-          item_name: '',
+          item_name: "",
           quantity: 1,
           price: 0,
           tax_percent: 18,
           tax_amount: 0,
-          total_amount: 0
-        }
-      ]
+          total_amount: 0,
+        },
+      ],
     }));
   };
 
   const removeItem = (index) => {
     if (formData.items.length === 1) {
-      alert('At least one item is required');
+      alert("At least one item is required");
       return;
     }
-    
+
     const updatedItems = formData.items.filter((_, i) => i !== index);
-    const totals = calculateInvoiceTotals(updatedItems, formData.discount_amount);
-    
-    setFormData(prev => ({
+    const totals = calculateInvoiceTotals(
+      updatedItems,
+      formData.discount_amount,
+    );
+
+    setFormData((prev) => ({
       ...prev,
       items: updatedItems,
-      ...totals
+      ...totals,
     }));
   };
 
   const handleCustomerSelect = (customer) => {
     setSelectedCustomer(customer);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      customer_id: customer.id
+      customer_id: customer.id,
     }));
     setCustomerSearch(customer.name);
     setShowCustomerDropdown(false);
-    
+
     // Clear customer error if exists
     if (formErrors.customer_id) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        customer_id: ''
+        customer_id: "",
       }));
     }
   };
@@ -429,42 +500,42 @@ const HandleInvoices = () => {
     const errors = {};
 
     if (!formData.customer_id) {
-      errors.customer_id = 'Please select a customer';
+      errors.customer_id = "Please select a customer";
     }
 
     if (!formData.invoice_no?.trim()) {
-      errors.invoice_no = 'Invoice number is required';
+      errors.invoice_no = "Invoice number is required";
     }
 
     if (!formData.invoice_date) {
-      errors.invoice_date = 'Invoice date is required';
+      errors.invoice_date = "Invoice date is required";
     }
 
     if (!formData.due_date) {
-      errors.due_date = 'Due date is required';
+      errors.due_date = "Due date is required";
     } else if (new Date(formData.due_date) < new Date(formData.invoice_date)) {
-      errors.due_date = 'Due date must be after invoice date';
+      errors.due_date = "Due date must be after invoice date";
     }
 
     // Validate items
     let hasItemErrors = false;
     formData.items.forEach((item, index) => {
       if (!item.item_name?.trim()) {
-        errors[`item_${index}_name`] = 'Item name is required';
+        errors[`item_${index}_name`] = "Item name is required";
         hasItemErrors = true;
       }
       if (item.quantity <= 0) {
-        errors[`item_${index}_quantity`] = 'Quantity must be greater than 0';
+        errors[`item_${index}_quantity`] = "Quantity must be greater than 0";
         hasItemErrors = true;
       }
       if (item.price <= 0) {
-        errors[`item_${index}_price`] = 'Price must be greater than 0';
+        errors[`item_${index}_price`] = "Price must be greater than 0";
         hasItemErrors = true;
       }
     });
 
     if (hasItemErrors) {
-      errors.items = 'Please fix item errors';
+      errors.items = "Please fix item errors";
     }
 
     setFormErrors(errors);
@@ -474,37 +545,62 @@ const HandleInvoices = () => {
   const generateInvoiceNumber = () => {
     const date = new Date();
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
     return `INV-${year}-${month}-${random}`;
   };
 
-  const handleAddInvoice = () => {
+  const fetchNextInvoiceNumber = async () => {
+    try {
+      const res = await api.get("/org/invoices/last-invoice-no");
+      console.log("res :: ", res);
+      const lastInvoice = res.data?.last_invoice_no;
+      console.log("LatestInvoice:: ",lastInvoice)
+
+      if (!lastInvoice) {
+        return "INV2026030001";
+      }
+
+     
+      return lastInvoice;
+    } catch (error) {
+      console.error("Failed to fetch invoice number", error);
+      return generateInvoiceNumber(); // fallback
+    }
+  };
+
+  const handleAddInvoice = async () => {
+    const newInvoiceNumber = await fetchNextInvoiceNumber();
+    // console.log(newInvoiceNumber)
     setEditingInvoice(null);
     setSelectedCustomer(null);
-    setCustomerSearch('');
+    setCustomerSearch("");
     setIsFullScreen(true); // Set to true to show preview
     setFormData({
-      customer_id: '',
-      invoice_no: generateInvoiceNumber(),
-      invoice_type: 'gst',
-      invoice_date: new Date().toISOString().split('T')[0],
-      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      customer_id: "",
+      invoice_no: newInvoiceNumber,
+      invoice_type: "gst",
+      invoice_date: new Date().toISOString().split("T")[0],
+      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
       subtotal: 0,
       tax_amount: 0,
       discount_amount: 0,
       total_amount: 0,
-      status: 'draft',
+      status: "draft",
       items: [
         {
-          item_name: '',
+          item_name: "",
           quantity: 1,
           price: 0,
           tax_percent: 18,
           tax_amount: 0,
-          total_amount: 0
-        }
-      ]
+          total_amount: 0,
+        },
+      ],
     });
     setFormErrors({});
     setApiError(null);
@@ -529,26 +625,27 @@ const HandleInvoices = () => {
           customer_id: invoice.customer_id,
           invoice_no: invoice.invoice_no,
           invoice_type: invoice.invoice_type,
-          invoice_date: invoice.invoice_date.split('T')[0],
-          due_date: invoice.due_date.split('T')[0],
+          invoice_date: invoice.invoice_date.split("T")[0],
+          due_date: invoice.due_date.split("T")[0],
           subtotal: parseFloat(invoice.subtotal),
           tax_amount: parseFloat(invoice.tax_amount),
           discount_amount: parseFloat(invoice.discount_amount || 0),
           total_amount: parseFloat(invoice.total_amount),
           status: invoice.status,
-          items: invoice.items?.map(item => ({
-            item_name: item.item_name,
-            quantity: parseFloat(item.quantity),
-            price: parseFloat(item.price),
-            tax_percent: parseFloat(item.tax_percent),
-            tax_amount: parseFloat(item.tax_amount),
-            total_amount: parseFloat(item.total_amount)
-          })) || []
+          items:
+            invoice.items?.map((item) => ({
+              item_name: item.item_name,
+              quantity: parseFloat(item.quantity),
+              price: parseFloat(item.price),
+              tax_percent: parseFloat(item.tax_percent),
+              tax_amount: parseFloat(item.tax_amount),
+              total_amount: parseFloat(item.total_amount),
+            })) || [],
         });
       }
     } catch (error) {
-      console.error('Error fetching invoice details:', error);
-      setApiError(error.message || 'Failed to fetch invoice details');
+      console.error("Error fetching invoice details:", error);
+      setApiError(error.message || "Failed to fetch invoice details");
     } finally {
       setModalLoading(false);
     }
@@ -560,7 +657,7 @@ const HandleInvoices = () => {
     setModalLoading(true);
     setApiError(null);
     setApiSuccess(null);
-    
+
     try {
       // Prepare data for API
       const invoiceData = {
@@ -574,45 +671,48 @@ const HandleInvoices = () => {
         discount_amount: formData.discount_amount,
         total_amount: formData.total_amount,
         status: formData.status,
-        items: formData.items.map(item => ({
+        items: formData.items.map((item) => ({
           item_name: item.item_name.trim(),
           quantity: parseFloat(item.quantity),
           price: parseFloat(item.price),
           tax_percent: parseFloat(item.tax_percent),
           tax_amount: parseFloat(item.tax_amount),
-          total_amount: parseFloat(item.total_amount)
-        }))
+          total_amount: parseFloat(item.total_amount),
+        })),
       };
 
       let response;
       if (editingInvoice) {
         // Update existing invoice
-        response = await api.put(`/org/invoices/${editingInvoice.id}`, invoiceData);
-        setApiSuccess('Invoice updated successfully');
+        response = await api.put(
+          `/org/invoices/${editingInvoice.id}`,
+          invoiceData,
+        );
+        setApiSuccess("Invoice updated successfully");
       } else {
         // Add new invoice
-        response = await api.post('/org/invoices', invoiceData);
-        setApiSuccess('Invoice created successfully');
-        console.log("api res:: ",response);
+        response = await api.post("/org/invoices", invoiceData);
+        setApiSuccess("Invoice created successfully");
+        console.log("api res:: ", response);
       }
-      
+
       if (response.data) {
         // Refresh the list
         fetchInvoices(pagination.current_page, pagination.per_page);
         setShowModal(false);
       }
     } catch (error) {
-      console.error('Error saving invoice:', error);
-      
+      console.error("Error saving invoice:", error);
+
       // Handle validation errors from backend
       if (error.data?.errors) {
         const backendErrors = {};
-        Object.keys(error.data.errors).forEach(key => {
+        Object.keys(error.data.errors).forEach((key) => {
           backendErrors[key] = error.data.errors[key][0];
         });
         setFormErrors(backendErrors);
       } else {
-        setApiError(error.message || 'Failed to save invoice');
+        setApiError(error.message || "Failed to save invoice");
       }
     } finally {
       setModalLoading(false);
@@ -620,43 +720,51 @@ const HandleInvoices = () => {
   };
 
   const handleDeleteInvoice = async (invoiceId) => {
-    if (!window.confirm('Are you sure you want to delete this invoice?')) return;
+    if (!window.confirm("Are you sure you want to delete this invoice?"))
+      return;
 
     try {
       await api.delete(`/org/invoices/${invoiceId}`);
-      setApiSuccess('Invoice deleted successfully');
+      setApiSuccess("Invoice deleted successfully");
       fetchInvoices(pagination.current_page, pagination.per_page);
     } catch (error) {
-      console.error('Error deleting invoice:', error);
-      alert(error.message || 'Failed to delete invoice');
+      console.error("Error deleting invoice:", error);
+      alert(error.message || "Failed to delete invoice");
     }
   };
 
   const handleBulkDelete = async () => {
     if (selectedRows.length === 0) return;
-    
-    if (!window.confirm(`Are you sure you want to delete ${selectedRows.length} invoices?`)) return;
+
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedRows.length} invoices?`,
+      )
+    )
+      return;
 
     try {
-      await api.post('/org/invoices/bulk-delete', { ids: selectedRows });
+      await api.post("/org/invoices/bulk-delete", { ids: selectedRows });
       setApiSuccess(`${selectedRows.length} invoices deleted successfully`);
       setSelectedRows([]);
       setSelectAll(false);
       fetchInvoices(pagination.current_page, pagination.per_page);
     } catch (error) {
-      console.error('Error deleting invoices:', error);
-      alert(error.message || 'Failed to delete invoices');
+      console.error("Error deleting invoices:", error);
+      alert(error.message || "Failed to delete invoices");
     }
   };
 
   const handleStatusChange = async (invoiceId, newStatus) => {
     try {
-      await api.patch(`/org/invoices/${invoiceId}/status`, { status: newStatus });
+      await api.patch(`/org/invoices/${invoiceId}/status`, {
+        status: newStatus,
+      });
       fetchInvoices(pagination.current_page, pagination.per_page);
       setApiSuccess(`Invoice status updated to ${newStatus}`);
     } catch (error) {
-      console.error('Error updating status:', error);
-      alert(error.message || 'Failed to update status');
+      console.error("Error updating status:", error);
+      alert(error.message || "Failed to update status");
     }
   };
 
@@ -668,21 +776,24 @@ const HandleInvoices = () => {
       customer_id: invoice.customer_id,
       invoice_no: generateInvoiceNumber(),
       invoice_type: invoice.invoice_type,
-      invoice_date: new Date().toISOString().split('T')[0],
-      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      invoice_date: new Date().toISOString().split("T")[0],
+      due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
       subtotal: parseFloat(invoice.subtotal),
       tax_amount: parseFloat(invoice.tax_amount),
       discount_amount: parseFloat(invoice.discount_amount || 0),
       total_amount: parseFloat(invoice.total_amount),
-      status: 'draft',
-      items: invoice.items?.map(item => ({
-        item_name: item.item_name,
-        quantity: parseFloat(item.quantity),
-        price: parseFloat(item.price),
-        tax_percent: parseFloat(item.tax_percent),
-        tax_amount: parseFloat(item.tax_amount),
-        total_amount: parseFloat(item.total_amount)
-      })) || []
+      status: "draft",
+      items:
+        invoice.items?.map((item) => ({
+          item_name: item.item_name,
+          quantity: parseFloat(item.quantity),
+          price: parseFloat(item.price),
+          tax_percent: parseFloat(item.tax_percent),
+          tax_amount: parseFloat(item.tax_amount),
+          total_amount: parseFloat(item.total_amount),
+        })) || [],
     });
     setFormErrors({});
     setApiError(null);
@@ -697,7 +808,7 @@ const HandleInvoices = () => {
 
   const handlePerPageChange = (e) => {
     const newPerPage = parseInt(e.target.value);
-    setPagination(prev => ({ ...prev, per_page: newPerPage }));
+    setPagination((prev) => ({ ...prev, per_page: newPerPage }));
     fetchInvoices(1, newPerPage);
   };
 
@@ -707,9 +818,9 @@ const HandleInvoices = () => {
   };
 
   const handleRowSelect = (invoiceId) => {
-    setSelectedRows(prev => {
+    setSelectedRows((prev) => {
       if (prev.includes(invoiceId)) {
-        return prev.filter(id => id !== invoiceId);
+        return prev.filter((id) => id !== invoiceId);
       } else {
         return [...prev, invoiceId];
       }
@@ -719,18 +830,45 @@ const HandleInvoices = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'draft': { bg: 'bg-[#E2E8F0]', text: 'text-[#475569]', icon: Clock, label: 'Draft' },
-      'sent': { bg: 'bg-[#DBEAFE]', text: 'text-[#1D4ED8]', icon: Send, label: 'Sent' },
-      'paid': { bg: 'bg-[#DCFCE7]', text: 'text-[#15803D]', icon: CheckCircle, label: 'Paid' },
-      'overdue': { bg: 'bg-[#FEE2E2]', text: 'text-[#B91C1C]', icon: AlertCircle, label: 'Overdue' },
-      'cancelled': { bg: 'bg-[#FEF3C7]', text: 'text-[#B45309]', icon: XCircle, label: 'Cancelled' }
+      draft: {
+        bg: "bg-[#E2E8F0]",
+        text: "text-[#475569]",
+        icon: Clock,
+        label: "Draft",
+      },
+      sent: {
+        bg: "bg-[#DBEAFE]",
+        text: "text-[#1D4ED8]",
+        icon: Send,
+        label: "Sent",
+      },
+      paid: {
+        bg: "bg-[#DCFCE7]",
+        text: "text-[#15803D]",
+        icon: CheckCircle,
+        label: "Paid",
+      },
+      overdue: {
+        bg: "bg-[#FEE2E2]",
+        text: "text-[#B91C1C]",
+        icon: AlertCircle,
+        label: "Overdue",
+      },
+      cancelled: {
+        bg: "bg-[#FEF3C7]",
+        text: "text-[#B45309]",
+        icon: XCircle,
+        label: "Cancelled",
+      },
     };
-    
+
     const config = statusConfig[status] || statusConfig.draft;
     const Icon = config.icon;
-    
+
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full flex items-center w-fit gap-1 ${config.bg} ${config.text}`}>
+      <span
+        className={`px-2 py-1 text-xs font-medium rounded-full flex items-center w-fit gap-1 ${config.bg} ${config.text}`}
+      >
         <Icon className="w-3 h-3" />
         {config.label}
       </span>
@@ -738,21 +876,26 @@ const HandleInvoices = () => {
   };
 
   const isOverdue = (dueDate, status) => {
-    return status !== 'paid' && status !== 'cancelled' && new Date(dueDate) < new Date();
+    return (
+      status !== "paid" &&
+      status !== "cancelled" &&
+      new Date(dueDate) < new Date()
+    );
   };
 
-  const filteredInvoices = invoices.filter(invoice =>
-    invoice.invoice_no.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    invoice.customer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    invoice.customer?.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredInvoices = invoices.filter(
+    (invoice) =>
+      invoice.invoice_no.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.customer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.customer?.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -768,16 +911,18 @@ const HandleInvoices = () => {
                 Create and manage customer invoices
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <button
                 onClick={handleRefresh}
                 className="p-2 border border-[#CBD5E1] rounded-lg hover:bg-[#F8FAFC] transition-colors"
                 title="Refresh"
               >
-                <RefreshCw className={`w-5 h-5 text-[#64748B] ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-5 h-5 text-[#64748B] ${loading ? "animate-spin" : ""}`}
+                />
               </button>
-              
+
               <button
                 onClick={handleAddInvoice}
                 className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-colors"
@@ -800,18 +945,20 @@ const HandleInvoices = () => {
                 className="w-full pl-10 pr-4 py-2 border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
               />
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <select
                 value={pagination.per_page}
                 onChange={handlePerPageChange}
                 className="px-3 py-2 border border-[#CBD5E1] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]"
               >
-                {perPageOptions.map(option => (
-                  <option key={option} value={option}>Show {option}</option>
+                {perPageOptions.map((option) => (
+                  <option key={option} value={option}>
+                    Show {option}
+                  </option>
                 ))}
               </select>
-              
+
               <button className="p-2 border border-[#CBD5E1] rounded-lg hover:bg-[#F8FAFC] transition-colors">
                 <Filter className="w-5 h-5 text-[#64748B]" />
               </button>
@@ -822,7 +969,8 @@ const HandleInvoices = () => {
           {selectedRows.length > 0 && (
             <div className="mt-4 flex items-center space-x-3 bg-[#F1F5F9] p-2 rounded-lg">
               <span className="text-sm text-[#334155]">
-                {selectedRows.length} invoice{selectedRows.length > 1 ? 's' : ''} selected
+                {selectedRows.length} invoice
+                {selectedRows.length > 1 ? "s" : ""} selected
               </span>
               <button
                 onClick={handleBulkDelete}
@@ -853,7 +1001,7 @@ const HandleInvoices = () => {
             <div className="flex-1">
               <p className="text-sm text-[#15803D]">{apiSuccess}</p>
             </div>
-            <button 
+            <button
               onClick={() => setApiSuccess(null)}
               className="text-[#15803D] hover:text-[#0F6B3D]"
             >
@@ -869,7 +1017,7 @@ const HandleInvoices = () => {
             <div className="flex-1">
               <p className="text-sm text-[#B91C1C]">{apiError}</p>
             </div>
-            <button 
+            <button
               onClick={() => setApiError(null)}
               className="text-[#B91C1C] hover:text-[#991B1B]"
             >
@@ -884,20 +1032,27 @@ const HandleInvoices = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#64748B]">Total Invoices</p>
-                <p className="text-2xl font-bold text-[#0F172A]">{pagination.total}</p>
+                <p className="text-2xl font-bold text-[#0F172A]">
+                  {pagination.total}
+                </p>
               </div>
               <div className="p-3 bg-[#2563EB]/10 rounded-lg">
                 <FileText className="w-5 h-5 text-[#2563EB]" />
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#64748B]">Total Amount</p>
                 <p className="text-2xl font-bold text-[#0F172A]">
-                  {formatCurrency(invoices.reduce((sum, inv) => sum + parseFloat(inv.total_amount), 0))}
+                  {formatCurrency(
+                    invoices.reduce(
+                      (sum, inv) => sum + parseFloat(inv.total_amount),
+                      0,
+                    ),
+                  )}
                 </p>
               </div>
               <div className="p-3 bg-[#F59E0B]/10 rounded-lg">
@@ -905,13 +1060,13 @@ const HandleInvoices = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#64748B]">Paid</p>
                 <p className="text-2xl font-bold text-[#22C55E]">
-                  {invoices.filter(i => i.status === 'paid').length}
+                  {invoices.filter((i) => i.status === "paid").length}
                 </p>
               </div>
               <div className="p-3 bg-[#22C55E]/10 rounded-lg">
@@ -919,13 +1074,16 @@ const HandleInvoices = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#64748B]">Overdue</p>
                 <p className="text-2xl font-bold text-[#EF4444]">
-                  {invoices.filter(i => isOverdue(i.due_date, i.status)).length}
+                  {
+                    invoices.filter((i) => isOverdue(i.due_date, i.status))
+                      .length
+                  }
                 </p>
               </div>
               <div className="p-3 bg-[#EF4444]/10 rounded-lg">
@@ -984,11 +1142,19 @@ const HandleInvoices = () => {
                   <tbody className="divide-y divide-[#E2E8F0]">
                     {filteredInvoices.length > 0 ? (
                       filteredInvoices.map((invoice) => {
-                        const overdue = isOverdue(invoice.due_date, invoice.status);
-                        const displayStatus = overdue ? 'overdue' : invoice.status;
-                        
+                        const overdue = isOverdue(
+                          invoice.due_date,
+                          invoice.status,
+                        );
+                        const displayStatus = overdue
+                          ? "overdue"
+                          : invoice.status;
+
                         return (
-                          <tr key={invoice.id} className="hover:bg-[#F8FAFC] transition-colors">
+                          <tr
+                            key={invoice.id}
+                            className="hover:bg-[#F8FAFC] transition-colors"
+                          >
                             <td className="px-6 py-4">
                               <input
                                 type="checkbox"
@@ -1000,7 +1166,9 @@ const HandleInvoices = () => {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <FileText className="w-5 h-5 text-[#2563EB] mr-2" />
-                                <span className="text-sm font-medium text-[#0F172A]">{invoice.invoice_no}</span>
+                                <span className="text-sm font-medium text-[#0F172A]">
+                                  {invoice.invoice_no}
+                                </span>
                               </div>
                             </td>
                             <td className="px-6 py-4">
@@ -1009,26 +1177,40 @@ const HandleInvoices = () => {
                                   <Users className="w-4 h-4 text-[#2563EB]" />
                                 </div>
                                 <div>
-                                  <p className="text-sm font-medium text-[#0F172A]">{invoice.customer?.name}</p>
-                                  <p className="text-xs text-[#64748B]">{invoice.customer?.email}</p>
+                                  <p className="text-sm font-medium text-[#0F172A]">
+                                    {invoice.customer?.name}
+                                  </p>
+                                  <p className="text-xs text-[#64748B]">
+                                    {invoice.customer?.email}
+                                  </p>
                                 </div>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center text-sm text-[#334155]">
                                 <Calendar className="w-4 h-4 text-[#64748B] mr-2" />
-                                {format(new Date(invoice.invoice_date), 'dd MMM yyyy')}
+                                {format(
+                                  new Date(invoice.invoice_date),
+                                  "dd MMM yyyy",
+                                )}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className={`flex items-center text-sm ${overdue ? 'text-[#EF4444]' : 'text-[#334155]'}`}>
+                              <div
+                                className={`flex items-center text-sm ${overdue ? "text-[#EF4444]" : "text-[#334155]"}`}
+                              >
                                 <Calendar className="w-4 h-4 text-[#64748B] mr-2" />
-                                {format(new Date(invoice.due_date), 'dd MMM yyyy')}
+                                {format(
+                                  new Date(invoice.due_date),
+                                  "dd MMM yyyy",
+                                )}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className="text-sm font-medium text-[#0F172A]">
-                                {formatCurrency(parseFloat(invoice.total_amount))}
+                                {formatCurrency(
+                                  parseFloat(invoice.total_amount),
+                                )}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -1037,7 +1219,12 @@ const HandleInvoices = () => {
                             <td className="px-6 py-4 text-right">
                               <div className="flex items-center justify-end space-x-2">
                                 <button
-                                  onClick={() => window.open(`/org/invoices/${invoice.id}/preview`, '_blank')}
+                                  onClick={() =>
+                                    window.open(
+                                      `/org/invoices/${invoice.id}/preview`,
+                                      "_blank",
+                                    )
+                                  }
                                   className="p-1 hover:bg-[#F1F5F9] rounded-lg transition-colors"
                                   title="Preview"
                                 >
@@ -1050,9 +1237,11 @@ const HandleInvoices = () => {
                                 >
                                   <Edit className="w-4 h-4 text-[#64748B]" />
                                 </button> */}
-                                
+
                                 <button
-                                  onClick={() => handleDeleteInvoice(invoice.id)}
+                                  onClick={() =>
+                                    handleDeleteInvoice(invoice.id)
+                                  }
                                   className="p-1 hover:bg-[#FEE2E2] rounded-lg transition-colors"
                                   title="Delete"
                                 >
@@ -1067,9 +1256,13 @@ const HandleInvoices = () => {
                       <tr>
                         <td colSpan="8" className="px-6 py-12 text-center">
                           <FileText className="w-12 h-12 text-[#64748B] mx-auto mb-4" />
-                          <p className="text-[#0F172A] font-medium">No invoices found</p>
+                          <p className="text-[#0F172A] font-medium">
+                            No invoices found
+                          </p>
                           <p className="text-sm text-[#64748B] mt-1">
-                            {searchTerm ? 'Try adjusting your search' : 'Create your first invoice to get started'}
+                            {searchTerm
+                              ? "Try adjusting your search"
+                              : "Create your first invoice to get started"}
                           </p>
                           {!searchTerm && (
                             <button
@@ -1091,52 +1284,65 @@ const HandleInvoices = () => {
               {invoices.length > 0 && (
                 <div className="px-6 py-4 border-t border-[#E2E8F0] bg-[#F8FAFC] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="text-sm text-[#64748B]">
-                    Showing <span className="font-medium">{pagination.from}</span> to{' '}
-                    <span className="font-medium">{pagination.to}</span> of{' '}
-                    <span className="font-medium">{pagination.total}</span> invoices
+                    Showing{" "}
+                    <span className="font-medium">{pagination.from}</span> to{" "}
+                    <span className="font-medium">{pagination.to}</span> of{" "}
+                    <span className="font-medium">{pagination.total}</span>{" "}
+                    invoices
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={() => handlePageChange(pagination.current_page - 1)}
+                      onClick={() =>
+                        handlePageChange(pagination.current_page - 1)
+                      }
                       disabled={pagination.current_page === 1}
                       className="p-2 border border-[#CBD5E1] rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4 text-[#64748B]" />
                     </button>
-                    
+
                     <div className="flex items-center space-x-1">
-                      {[...Array(Math.min(5, pagination.last_page))].map((_, i) => {
-                        let pageNum;
-                        if (pagination.last_page <= 5) {
-                          pageNum = i + 1;
-                        } else if (pagination.current_page <= 3) {
-                          pageNum = i + 1;
-                        } else if (pagination.current_page >= pagination.last_page - 2) {
-                          pageNum = pagination.last_page - 4 + i;
-                        } else {
-                          pageNum = pagination.current_page - 2 + i;
-                        }
-                        
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => handlePageChange(pageNum)}
-                            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                              pagination.current_page === pageNum
-                                ? 'bg-[#2563EB] text-white'
-                                : 'text-[#64748B] hover:bg-[#F1F5F9]'
-                            }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
+                      {[...Array(Math.min(5, pagination.last_page))].map(
+                        (_, i) => {
+                          let pageNum;
+                          if (pagination.last_page <= 5) {
+                            pageNum = i + 1;
+                          } else if (pagination.current_page <= 3) {
+                            pageNum = i + 1;
+                          } else if (
+                            pagination.current_page >=
+                            pagination.last_page - 2
+                          ) {
+                            pageNum = pagination.last_page - 4 + i;
+                          } else {
+                            pageNum = pagination.current_page - 2 + i;
+                          }
+
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => handlePageChange(pageNum)}
+                              className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                                pagination.current_page === pageNum
+                                  ? "bg-[#2563EB] text-white"
+                                  : "text-[#64748B] hover:bg-[#F1F5F9]"
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        },
+                      )}
                     </div>
-                    
+
                     <button
-                      onClick={() => handlePageChange(pagination.current_page + 1)}
-                      disabled={pagination.current_page === pagination.last_page}
+                      onClick={() =>
+                        handlePageChange(pagination.current_page + 1)
+                      }
+                      disabled={
+                        pagination.current_page === pagination.last_page
+                      }
                       className="p-2 border border-[#CBD5E1] rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="w-4 h-4 text-[#64748B]" />
@@ -1151,7 +1357,9 @@ const HandleInvoices = () => {
 
       {/* Full Screen Add/Edit Invoice Modal */}
       {showModal && (
-        <div className={`fixed inset-0 z-50 bg-white flex flex-col ${isFullScreen ? '' : 'overflow-y-auto'}`}>
+        <div
+          className={`fixed inset-0 z-50 bg-white flex flex-col ${isFullScreen ? "" : "overflow-y-auto"}`}
+        >
           {/* Modal Header */}
           <div className="sticky top-0 z-10 bg-white border-b border-[#E2E8F0] px-6 py-4 flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -1163,19 +1371,19 @@ const HandleInvoices = () => {
               </button>
               <div>
                 <h2 className="text-xl font-semibold text-[#0F172A]">
-                  {editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}
+                  {editingInvoice ? "Edit Invoice" : "Create New Invoice"}
                 </h2>
                 <p className="text-sm text-[#64748B] mt-1">
                   Fill in the invoice details. Changes are saved automatically.
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setIsFullScreen(!isFullScreen)}
                 className="p-2 hover:bg-[#F1F5F9] rounded-lg transition-colors"
-                title={isFullScreen ? 'Exit full screen' : 'Full screen'}
+                title={isFullScreen ? "Exit full screen" : "Full screen"}
               >
                 {isFullScreen ? (
                   <Minimize2 className="w-5 h-5 text-[#64748B]" />
@@ -1183,7 +1391,7 @@ const HandleInvoices = () => {
                   <Maximize2 className="w-5 h-5 text-[#64748B]" />
                 )}
               </button>
-              
+
               <button
                 onClick={() => setShowModal(false)}
                 className="px-4 py-2 border border-[#CBD5E1] rounded-lg text-sm font-medium text-[#334155] hover:bg-[#F8FAFC] transition-colors"
@@ -1203,7 +1411,7 @@ const HandleInvoices = () => {
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    <span>{editingInvoice ? 'Update' : 'Create'} Invoice</span>
+                    <span>{editingInvoice ? "Update" : "Create"} Invoice</span>
                   </>
                 )}
               </button>
@@ -1214,7 +1422,9 @@ const HandleInvoices = () => {
           <div className="flex-1 overflow-hidden">
             <div className="h-full flex">
               {/* Left Side - Form */}
-              <div className={`${isFullScreen ? 'w-1/2' : 'w-full lg:w-1/2'} overflow-y-auto border-r border-[#E2E8F0]`}>
+              <div
+                className={`${isFullScreen ? "w-1/2" : "w-full lg:w-1/2"} overflow-y-auto border-r border-[#E2E8F0]`}
+              >
                 <div className="p-6">
                   <div className="space-y-6 max-w-2xl mx-auto">
                     {/* Form Error Display */}
@@ -1227,7 +1437,8 @@ const HandleInvoices = () => {
                     {/* Customer Selection with Search */}
                     <div className="relative">
                       <label className="block text-sm font-medium text-[#334155] mb-1">
-                        Select Customer <span className="text-[#EF4444]">*</span>
+                        Select Customer{" "}
+                        <span className="text-[#EF4444]">*</span>
                       </label>
                       <div className="relative">
                         <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B]" />
@@ -1242,7 +1453,9 @@ const HandleInvoices = () => {
                           onFocus={() => setShowCustomerDropdown(true)}
                           placeholder="Search customer by name, email or phone..."
                           className={`w-full pl-10 pr-4 py-2 border ${
-                            formErrors.customer_id ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+                            formErrors.customer_id
+                              ? "border-[#EF4444]"
+                              : "border-[#CBD5E1]"
                           } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]`}
                         />
                       </div>
@@ -1263,13 +1476,17 @@ const HandleInvoices = () => {
                                     <Users className="w-5 h-5 text-[#2563EB]" />
                                   </div>
                                   <div className="flex-1">
-                                    <p className="text-sm font-medium text-[#0F172A]">{customer.name}</p>
+                                    <p className="text-sm font-medium text-[#0F172A]">
+                                      {customer.name}
+                                    </p>
                                     <div className="flex items-center space-x-3 mt-1">
                                       <span className="text-xs text-[#64748B] flex items-center">
-                                        <Mail className="w-3 h-3 mr-1" /> {customer.email}
+                                        <Mail className="w-3 h-3 mr-1" />{" "}
+                                        {customer.email}
                                       </span>
                                       <span className="text-xs text-[#64748B] flex items-center">
-                                        <Phone className="w-3 h-3 mr-1" /> {customer.phone}
+                                        <Phone className="w-3 h-3 mr-1" />{" "}
+                                        {customer.phone}
                                       </span>
                                     </div>
                                   </div>
@@ -1285,36 +1502,52 @@ const HandleInvoices = () => {
                       )}
 
                       {formErrors.customer_id && (
-                        <p className="text-xs text-[#EF4444] mt-1">{formErrors.customer_id}</p>
+                        <p className="text-xs text-[#EF4444] mt-1">
+                          {formErrors.customer_id}
+                        </p>
                       )}
                     </div>
 
                     {/* Selected Customer Info */}
                     {selectedCustomer && (
                       <div className="bg-[#F8FAFC] rounded-lg p-4 border border-[#E2E8F0]">
-                        <h4 className="text-sm font-medium text-[#0F172A] mb-2">Selected Customer Details</h4>
+                        <h4 className="text-sm font-medium text-[#0F172A] mb-2">
+                          Selected Customer Details
+                        </h4>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <p className="text-xs text-[#64748B]">Name</p>
-                            <p className="text-sm font-medium text-[#0F172A]">{selectedCustomer.name}</p>
+                            <p className="text-sm font-medium text-[#0F172A]">
+                              {selectedCustomer.name}
+                            </p>
                           </div>
                           <div>
                             <p className="text-xs text-[#64748B]">Email</p>
-                            <p className="text-sm text-[#0F172A]">{selectedCustomer.email}</p>
+                            <p className="text-sm text-[#0F172A]">
+                              {selectedCustomer.email}
+                            </p>
                           </div>
                           <div>
                             <p className="text-xs text-[#64748B]">Phone</p>
-                            <p className="text-sm text-[#0F172A]">{selectedCustomer.phone}</p>
+                            <p className="text-sm text-[#0F172A]">
+                              {selectedCustomer.phone}
+                            </p>
                           </div>
                           {selectedCustomer.gstin && (
                             <div>
                               <p className="text-xs text-[#64748B]">GSTIN</p>
-                              <p className="text-sm font-mono text-[#0F172A]">{selectedCustomer.gstin}</p>
+                              <p className="text-sm font-mono text-[#0F172A]">
+                                {selectedCustomer.gstin}
+                              </p>
                             </div>
                           )}
                           <div className="col-span-2">
-                            <p className="text-xs text-[#64748B]">Billing Address</p>
-                            <p className="text-sm text-[#0F172A]">{selectedCustomer.billing_address}</p>
+                            <p className="text-xs text-[#64748B]">
+                              Billing Address
+                            </p>
+                            <p className="text-sm text-[#0F172A]">
+                              {selectedCustomer.billing_address}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -1324,7 +1557,8 @@ const HandleInvoices = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-[#334155] mb-1">
-                          Invoice Number <span className="text-[#EF4444]">*</span>
+                          Invoice Number{" "}
+                          <span className="text-[#EF4444]">*</span>
                         </label>
                         <input
                           type="text"
@@ -1332,12 +1566,16 @@ const HandleInvoices = () => {
                           value={formData.invoice_no}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-2 border ${
-                            formErrors.invoice_no ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+                            formErrors.invoice_no
+                              ? "border-[#EF4444]"
+                              : "border-[#CBD5E1]"
                           } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]`}
                           placeholder="INV-2026-001"
                         />
                         {formErrors.invoice_no && (
-                          <p className="text-xs text-[#EF4444] mt-1">{formErrors.invoice_no}</p>
+                          <p className="text-xs text-[#EF4444] mt-1">
+                            {formErrors.invoice_no}
+                          </p>
                         )}
                       </div>
 
@@ -1368,11 +1606,15 @@ const HandleInvoices = () => {
                           value={formData.invoice_date}
                           onChange={handleInputChange}
                           className={`w-full px-4 py-2 border ${
-                            formErrors.invoice_date ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+                            formErrors.invoice_date
+                              ? "border-[#EF4444]"
+                              : "border-[#CBD5E1]"
                           } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]`}
                         />
                         {formErrors.invoice_date && (
-                          <p className="text-xs text-[#EF4444] mt-1">{formErrors.invoice_date}</p>
+                          <p className="text-xs text-[#EF4444] mt-1">
+                            {formErrors.invoice_date}
+                          </p>
                         )}
                       </div>
 
@@ -1387,11 +1629,15 @@ const HandleInvoices = () => {
                           onChange={handleInputChange}
                           min={formData.invoice_date}
                           className={`w-full px-4 py-2 border ${
-                            formErrors.due_date ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+                            formErrors.due_date
+                              ? "border-[#EF4444]"
+                              : "border-[#CBD5E1]"
                           } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]`}
                         />
                         {formErrors.due_date && (
-                          <p className="text-xs text-[#EF4444] mt-1">{formErrors.due_date}</p>
+                          <p className="text-xs text-[#EF4444] mt-1">
+                            {formErrors.due_date}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -1399,7 +1645,9 @@ const HandleInvoices = () => {
                     {/* Invoice Items */}
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-[#0F172A]">Invoice Items</h4>
+                        <h4 className="text-sm font-medium text-[#0F172A]">
+                          Invoice Items
+                        </h4>
                         <button
                           type="button"
                           onClick={addItem}
@@ -1411,7 +1659,9 @@ const HandleInvoices = () => {
                       </div>
 
                       {formErrors.items && (
-                        <p className="text-xs text-[#EF4444] mb-2">{formErrors.items}</p>
+                        <p className="text-xs text-[#EF4444] mb-2">
+                          {formErrors.items}
+                        </p>
                       )}
 
                       {/* Items Table */}
@@ -1419,12 +1669,24 @@ const HandleInvoices = () => {
                         <table className="w-full">
                           <thead className="bg-[#F1F5F9]">
                             <tr>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-[#334155]">Item</th>
-                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Qty</th>
-                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Price</th>
-                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Tax %</th>
-                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Tax Amt</th>
-                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">Total</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-[#334155]">
+                                Item
+                              </th>
+                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                                Qty
+                              </th>
+                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                                Price
+                              </th>
+                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                                Tax %
+                              </th>
+                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                                Tax Amt
+                              </th>
+                              <th className="px-3 py-2 text-right text-xs font-medium text-[#334155]">
+                                Total
+                              </th>
                               <th className="px-3 py-2 text-center text-xs font-medium text-[#334155]"></th>
                             </tr>
                           </thead>
@@ -1435,25 +1697,43 @@ const HandleInvoices = () => {
                                   <input
                                     type="text"
                                     value={item.item_name}
-                                    onChange={(e) => handleItemChange(index, 'item_name', e.target.value)}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        index,
+                                        "item_name",
+                                        e.target.value,
+                                      )
+                                    }
                                     className={`w-full px-2 py-1 border ${
-                                      formErrors[`item_${index}_name`] ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+                                      formErrors[`item_${index}_name`]
+                                        ? "border-[#EF4444]"
+                                        : "border-[#CBD5E1]"
                                     } rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]`}
                                     placeholder="Item name"
                                   />
                                   {formErrors[`item_${index}_name`] && (
-                                    <p className="text-xs text-[#EF4444] mt-1">{formErrors[`item_${index}_name`]}</p>
+                                    <p className="text-xs text-[#EF4444] mt-1">
+                                      {formErrors[`item_${index}_name`]}
+                                    </p>
                                   )}
                                 </td>
                                 <td className="px-3 py-2">
                                   <input
                                     type="number"
                                     value={item.quantity}
-                                    onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        index,
+                                        "quantity",
+                                        e.target.value,
+                                      )
+                                    }
                                     min="1"
                                     step="1"
                                     className={`w-20 px-2 py-1 border ${
-                                      formErrors[`item_${index}_quantity`] ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+                                      formErrors[`item_${index}_quantity`]
+                                        ? "border-[#EF4444]"
+                                        : "border-[#CBD5E1]"
                                     } rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]`}
                                   />
                                 </td>
@@ -1461,11 +1741,19 @@ const HandleInvoices = () => {
                                   <input
                                     type="number"
                                     value={item.price}
-                                    onChange={(e) => handleItemChange(index, 'price', e.target.value)}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        index,
+                                        "price",
+                                        e.target.value,
+                                      )
+                                    }
                                     min="0"
                                     step="0.01"
                                     className={`w-24 px-2 py-1 border ${
-                                      formErrors[`item_${index}_price`] ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+                                      formErrors[`item_${index}_price`]
+                                        ? "border-[#EF4444]"
+                                        : "border-[#CBD5E1]"
                                     } rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB]`}
                                     placeholder="0.00"
                                   />
@@ -1474,7 +1762,13 @@ const HandleInvoices = () => {
                                   <input
                                     type="number"
                                     value={item.tax_percent}
-                                    onChange={(e) => handleItemChange(index, 'tax_percent', e.target.value)}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        index,
+                                        "tax_percent",
+                                        e.target.value,
+                                      )
+                                    }
                                     min="0"
                                     max="100"
                                     step="0.01"
@@ -1512,11 +1806,15 @@ const HandleInvoices = () => {
                       <div className="w-72 space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-[#64748B]">Subtotal:</span>
-                          <span className="font-medium text-[#0F172A]">{formatCurrency(formData.subtotal)}</span>
+                          <span className="font-medium text-[#0F172A]">
+                            {formatCurrency(formData.subtotal)}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-[#64748B]">Tax Amount:</span>
-                          <span className="font-medium text-[#0F172A]">{formatCurrency(formData.tax_amount)}</span>
+                          <span className="font-medium text-[#0F172A]">
+                            {formatCurrency(formData.tax_amount)}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-[#64748B]">Discount:</span>
@@ -1526,12 +1824,16 @@ const HandleInvoices = () => {
                               name="discount_amount"
                               value={formData.discount_amount}
                               onChange={(e) => {
-                                const discount = parseFloat(e.target.value) || 0;
-                                const totals = calculateInvoiceTotals(formData.items, discount);
-                                setFormData(prev => ({
+                                const discount =
+                                  parseFloat(e.target.value) || 0;
+                                const totals = calculateInvoiceTotals(
+                                  formData.items,
+                                  discount,
+                                );
+                                setFormData((prev) => ({
                                   ...prev,
                                   discount_amount: discount,
-                                  ...totals
+                                  ...totals,
                                 }));
                               }}
                               min="0"
@@ -1543,7 +1845,9 @@ const HandleInvoices = () => {
                         </div>
                         <div className="flex justify-between text-base font-bold border-t border-[#E2E8F0] pt-2">
                           <span className="text-[#0F172A]">Total:</span>
-                          <span className="text-[#2563EB]">{formatCurrency(formData.total_amount)}</span>
+                          <span className="text-[#2563EB]">
+                            {formatCurrency(formData.total_amount)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1571,7 +1875,11 @@ const HandleInvoices = () => {
                     {/* Info Note */}
                     <div className="bg-[#F8FAFC] rounded-lg p-3 border border-[#E2E8F0]">
                       <p className="text-xs text-[#64748B]">
-                        <span className="font-medium text-[#334155]">Note:</span> The invoice will be sent to the customer's email address when marked as sent. Make sure all details are correct.
+                        <span className="font-medium text-[#334155]">
+                          Note:
+                        </span>{" "}
+                        The invoice will be sent to the customer's email address
+                        when marked as sent. Make sure all details are correct.
                       </p>
                     </div>
                   </div>
@@ -1579,11 +1887,13 @@ const HandleInvoices = () => {
               </div>
 
               {/* Right Side - Preview - Always visible when isFullScreen is true */}
-              <div className={`${isFullScreen ? 'w-1/2' : 'w-0'} overflow-y-auto bg-[#F8FAFC] transition-all duration-300`}>
+              <div
+                className={`${isFullScreen ? "w-1/2" : "w-0"} overflow-y-auto bg-[#F8FAFC] transition-all duration-300`}
+              >
                 {isFullScreen && (
                   <div className="p-6">
-                    <InvoicePreview 
-                      formData={formData} 
+                    <InvoicePreview
+                      formData={formData}
                       selectedCustomer={selectedCustomer}
                       formatCurrency={formatCurrency}
                     />

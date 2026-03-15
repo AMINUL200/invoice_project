@@ -8,10 +8,10 @@ import ProfessionalTemplate from './ProfessionalTemplate';
 
 export const TEMPLATES = {
   DEFAULT: { id: 0, name: 'Default', component: DefaultTemplate },
-  CLASSIC: { id: 1, name: 'Classic', component: ClassicTemplate }, // Replace with ClassicTemplate when ready
-  MODERN: { id: 2, name: 'Modern', component: ModernTemplate },   // Replace with ModernTemplate when ready
-  MINIMAL: { id: 3, name: 'Minimal', component: MinimalTemplate },  // Replace with MinimalTemplate when ready
-  PROFESSIONAL: { id: 4, name: 'Professional', component: ProfessionalTemplate } // Replace with ProfessionalTemplate when ready
+  CLASSIC: { id: 1, name: 'Classic', component: ClassicTemplate }, 
+  MODERN: { id: 2, name: 'Modern', component: ModernTemplate },  
+  MINIMAL: { id: 3, name: 'Minimal', component: MinimalTemplate },  
+  PROFESSIONAL: { id: 4, name: 'Professional', component: ProfessionalTemplate } 
 };
 
 // Helper function to get template by ID

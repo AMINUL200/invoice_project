@@ -46,6 +46,18 @@ export const superAdminMenu = [
     icon: Settings,
     path: "/admin/settings",
   },
+  {
+    id: "invoice-template",
+    label: "Invoice Template",
+    icon: Settings,
+    path: "/admin/invoice-template",
+  },
+  {
+    id: "org-settings",
+    label: "Organization Settings",
+    icon: Settings,
+    path: "/admin/org-settings",
+  },
 ];
 
 /* ================= ORGANIZATION OWNER ================= */

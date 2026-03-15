@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+/* @layer base { img { display: initial; } }  */
+
+/* 
+@media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  #invoice-print-area,
+  #invoice-print-area * {
+    visibility: visible;
+  }
+
+  #invoice-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+} */
