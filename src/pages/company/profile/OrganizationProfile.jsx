@@ -19,21 +19,38 @@ import {
   Calendar,
   TrendingUp,
   Users,
-  Package
+  Package,
+  Plus,
+  File,
+  Hash,
+  AlignLeft,
+  CheckSquare,
+  Upload,
+  Image as ImageIcon,
+  Download,
+  Eye,
+  Trash2
 } from 'lucide-react';
 import { api } from '../../../utils/app';
 import toast from 'react-hot-toast';
 
 const OrganizationProfile = () => {
+  const STORAGE_URL = import.meta.env.VITE_STORAGE_URL;
+  
   const [organization, setOrganization] = useState(null);
   const [settings, setSettings] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [usage, setUsage] = useState(null);
+  const [dynamicFields, setDynamicFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState({});
   const [apiError, setApiError] = useState(null);
   const [apiSuccess, setApiSuccess] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [filePreviews, setFilePreviews] = useState({});
+  const [fileUploads, setFileUploads] = useState({});
+  
   const [formData, setFormData] = useState({
     company_name: '',
     legal_name: '',
@@ -42,6 +59,7 @@ const OrganizationProfile = () => {
     gstin: '',
     address: ''
   });
+  const [dynamicFormData, setDynamicFormData] = useState({});
   const [formErrors, setFormErrors] = useState({});
 
   // Fetch organization data
@@ -62,6 +80,7 @@ const OrganizationProfile = () => {
         setSettings(data.settings);
         setSubscription(data.subscription);
         setUsage(data.usage);
+        setDynamicFields(data.dynamic_field || []);
         
         // Initialize form data
         setFormData({
@@ -72,6 +91,22 @@ const OrganizationProfile = () => {
           gstin: data.organization.gstin || '',
           address: data.organization.address || ''
         });
+
+        // Initialize dynamic fields data
+        const dynamicData = {};
+        const previews = {};
+        
+        (data.dynamic_field || []).forEach(field => {
+          dynamicData[field.field_key] = field.value || '';
+          
+          // Initialize file previews for file type fields
+          if (field.field_type === 'file' && field.value) {
+            previews[field.field_key] = field.value;
+          }
+        });
+        
+        setDynamicFormData(dynamicData);
+        setFilePreviews(previews);
       }
     } catch (error) {
       console.error('Error fetching organization data:', error);
@@ -93,6 +128,90 @@ const OrganizationProfile = () => {
         ...prev,
         [name]: ''
       }));
+    }
+  };
+
+  const handleDynamicFieldChange = (fieldKey, value) => {
+    setDynamicFormData(prev => ({
+      ...prev,
+      [fieldKey]: value
+    }));
+  };
+
+  const handleFileChange = async (field, file) => {
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only images and PDF files are allowed');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size should be less than 5MB');
+      return;
+    }
+
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreviews(prev => ({
+          ...prev,
+          [field.field_key]: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // For PDF files, just store the file name
+      setFilePreviews(prev => ({
+        ...prev,
+        [field.field_key]: file.name
+      }));
+    }
+
+    // Store the file for upload
+    setFileUploads(prev => ({
+      ...prev,
+      [field.field_key]: file
+    }));
+
+    // Clear error for this field
+    if (formErrors[field.field_key]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [field.field_key]: ''
+      }));
+    }
+  };
+
+  const handleFileRemove = (fieldKey) => {
+    setFilePreviews(prev => {
+      const newPreviews = { ...prev };
+      delete newPreviews[fieldKey];
+      return newPreviews;
+    });
+    
+    setFileUploads(prev => {
+      const newUploads = { ...prev };
+      delete newUploads[fieldKey];
+      return newUploads;
+    });
+
+    setDynamicFormData(prev => ({
+      ...prev,
+      [fieldKey]: ''
+    }));
+  };
+
+  const handleFileDownload = (filePath, fileName) => {
+    if (!filePath) return;
+    
+    // If it's a full URL or path, open in new tab
+    if (filePath.startsWith('http') || filePath.startsWith('/')) {
+      window.open(`${STORAGE_URL}/${filePath}`, '_blank');
     }
   };
 
@@ -127,6 +246,24 @@ const OrganizationProfile = () => {
       errors.address = 'Address is required';
     }
 
+    // Validate required dynamic fields
+    dynamicFields.forEach(field => {
+      if (field.is_required) {
+        const value = dynamicFormData[field.field_key];
+        const hasFile = filePreviews[field.field_key] || fileUploads[field.field_key];
+        
+        if (field.field_type === 'file') {
+          if (!value && !hasFile) {
+            errors[field.field_key] = `${field.field_label} is required`;
+          }
+        } else {
+          if (!value?.trim()) {
+            errors[field.field_key] = `${field.field_label} is required`;
+          }
+        }
+      }
+    });
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -139,40 +276,57 @@ const OrganizationProfile = () => {
     setApiSuccess(null);
     
     try {
-      // Prepare data for API (only the fields that can be updated)
-      const updateData = {
-        company_name: formData.company_name.trim(),
-        legal_name: formData.legal_name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        phone: formData.phone.replace(/\D/g, ''),
-        gstin: formData.gstin?.trim() || null,
-        address: formData.address.trim()
-      };
+      // Create FormData for file uploads
+      const formDataToSend = new FormData();
+      
+      // Add regular fields
+      formDataToSend.append('company_name', formData.company_name.trim());
+      formDataToSend.append('legal_name', formData.legal_name.trim());
+      formDataToSend.append('email', formData.email.trim().toLowerCase());
+      formDataToSend.append('phone', formData.phone.replace(/\D/g, ''));
+      formDataToSend.append('gstin', formData.gstin?.trim() || '');
+      formDataToSend.append('address', formData.address.trim());
 
-      const response = await api.put('/org/profile', updateData);
+      // Add dynamic text fields
+      Object.keys(dynamicFormData).forEach(key => {
+        const field = dynamicFields.find(f => f.field_key === key);
+        if (field && field.field_type !== 'file') {
+          formDataToSend.append(key, dynamicFormData[key] || '');
+        }
+      });
+
+      // Add file uploads
+      Object.keys(fileUploads).forEach(key => {
+        formDataToSend.append(key, fileUploads[key]);
+      });
+
+      const response = await api.post('/org/profile', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       
       if (response.data) {
-        // Update organization data
-        setOrganization(prev => ({
-          ...prev,
-          ...updateData
-        }));
-        toast.success(response.data.message || 'Organization profile updated successfully' );
+        toast.success(response.data.message || 'Organization profile updated successfully');
         setApiSuccess('Organization profile updated successfully');
+        
+        // Refresh data
+        await fetchOrganizationData();
         setIsEditing(false);
+        setFileUploads({});
       }
     } catch (error) {
       console.error('Error updating organization:', error);
       
       // Handle validation errors from backend
-      if (error.data?.errors) {
+      if (error.response?.data?.errors) {
         const backendErrors = {};
-        Object.keys(error.data.errors).forEach(key => {
-          backendErrors[key] = error.data.errors[key][0];
+        Object.keys(error.response.data.errors).forEach(key => {
+          backendErrors[key] = error.response.data.errors[key][0];
         });
         setFormErrors(backendErrors);
       } else {
-        setApiError(error.message || 'Failed to update organization');
+        setApiError(error.response?.data?.message || error.message || 'Failed to update organization');
       }
     } finally {
       setSaving(false);
@@ -189,8 +343,272 @@ const OrganizationProfile = () => {
       gstin: organization?.gstin || '',
       address: organization?.address || ''
     });
+
+    // Reset dynamic fields to original values
+    const dynamicData = {};
+    const previews = {};
+    
+    dynamicFields.forEach(field => {
+      dynamicData[field.field_key] = field.value || '';
+      if (field.field_type === 'file' && field.value) {
+        previews[field.field_key] = field.value;
+      }
+    });
+    
+    setDynamicFormData(dynamicData);
+    setFilePreviews(previews);
+    setFileUploads({});
     setFormErrors({});
     setIsEditing(false);
+  };
+
+  const getFieldIcon = (fieldType) => {
+    switch (fieldType) {
+      case 'text':
+        return <AlignLeft className="w-4 h-4" />;
+      case 'number':
+        return <Hash className="w-4 h-4" />;
+      case 'checkbox':
+        return <CheckSquare className="w-4 h-4" />;
+      case 'file':
+        return <File className="w-4 h-4" />;
+      default:
+        return <File className="w-4 h-4" />;
+    }
+  };
+
+  const renderFileField = (field) => {
+    const fieldError = formErrors[field.field_key];
+    const hasPreview = filePreviews[field.field_key];
+    const hasFile = dynamicFormData[field.field_key];
+    const isUploading = uploading[field.field_key];
+
+    if (!isEditing) {
+      // View mode
+      if (!hasFile && !hasPreview) {
+        return <p className="text-sm text-[#64748B] italic">No file uploaded</p>;
+      }
+
+      const fileUrl = hasPreview && hasPreview.startsWith('data:') 
+        ? hasPreview 
+        : `${STORAGE_URL}/${hasFile}`;
+
+      const isImage = hasPreview?.startsWith('data:image') || 
+                     (hasFile && /\.(jpg|jpeg|png|gif|webp)$/i.test(hasFile));
+
+      return (
+        <div className="flex items-center space-x-3">
+          {isImage ? (
+            <div className="relative group">
+              <img
+                src={fileUrl}
+                alt={field.field_label}
+                className="w-16 h-16 object-cover rounded-lg border border-[#E2E8F0]"
+              />
+              <button
+                onClick={() => window.open(fileUrl, '_blank')}
+                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center"
+              >
+                <Eye className="w-5 h-5 text-white" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2 bg-[#F8FAFC] px-3 py-2 rounded-lg">
+              <FileText className="w-5 h-5 text-[#2563EB]" />
+              <span className="text-sm text-[#0F172A]">{hasFile?.split('/').pop()}</span>
+              <button
+                onClick={() => handleFileDownload(hasFile, hasFile?.split('/').pop())}
+                className="p-1 hover:bg-[#E2E8F0] rounded transition-colors"
+                title="Download"
+              >
+                <Download className="w-4 h-4 text-[#64748B]" />
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Edit mode
+    return (
+      <div>
+        <input
+          type="file"
+          id={`file-${field.field_key}`}
+          accept="image/*,.pdf"
+          onChange={(e) => handleFileChange(field, e.target.files[0])}
+          className="hidden"
+          disabled={isUploading}
+        />
+        
+        <div className="space-y-3">
+          {/* File preview */}
+          {(hasPreview || hasFile) && (
+            <div className="relative inline-block">
+              {hasPreview && hasPreview.startsWith('data:image') ? (
+                <div className="relative group">
+                  <img
+                    src={hasPreview}
+                    alt="Preview"
+                    className="w-24 h-24 object-cover rounded-lg border border-[#E2E8F0]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleFileRemove(field.field_key)}
+                    className="absolute -top-2 -right-2 p-1 bg-[#EF4444] text-white rounded-full hover:bg-[#DC2626] transition-colors"
+                    title="Remove"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : hasPreview ? (
+                <div className="flex items-center space-x-2 bg-[#F8FAFC] px-3 py-2 rounded-lg">
+                  <FileText className="w-5 h-5 text-[#2563EB]" />
+                  <span className="text-sm text-[#0F172A]">{hasPreview}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleFileRemove(field.field_key)}
+                    className="p-1 hover:bg-[#E2E8F0] rounded transition-colors"
+                    title="Remove"
+                  >
+                    <X className="w-4 h-4 text-[#64748B]" />
+                  </button>
+                </div>
+              ) : hasFile && (
+                <div className="flex items-center space-x-2 bg-[#F8FAFC] px-3 py-2 rounded-lg">
+                  <FileText className="w-5 h-5 text-[#2563EB]" />
+                  <span className="text-sm text-[#0F172A]">{hasFile.split('/').pop()}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleFileRemove(field.field_key)}
+                    className="p-1 hover:bg-[#E2E8F0] rounded transition-colors"
+                    title="Remove"
+                  >
+                    <X className="w-4 h-4 text-[#64748B]" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Upload button */}
+          <div>
+            <label
+              htmlFor={`file-${field.field_key}`}
+              className={`inline-flex items-center px-4 py-2 border border-[#CBD5E1] rounded-lg text-sm font-medium text-[#334155] hover:bg-[#F8FAFC] cursor-pointer transition-colors ${
+                isUploading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              {isUploading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#2563EB] mr-2"></div>
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  <span>{hasPreview || hasFile ? 'Change File' : 'Upload File'}</span>
+                </>
+              )}
+            </label>
+            <p className="text-xs text-[#64748B] mt-1">
+              Max size: 5MB. Allowed: Images, PDF
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDynamicField = (field) => {
+    const fieldError = formErrors[field.field_key];
+    
+    if (field.field_type === 'file') {
+      return renderFileField(field);
+    }
+    
+    switch (field.field_type) {
+      case 'textarea':
+        return (
+          <textarea
+            value={dynamicFormData[field.field_key] || ''}
+            onChange={(e) => handleDynamicFieldChange(field.field_key, e.target.value)}
+            disabled={!isEditing}
+            rows="3"
+            className={`w-full px-4 py-2 border ${
+              fieldError ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+            } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] ${
+              !isEditing ? 'bg-[#F8FAFC]' : ''
+            }`}
+            placeholder={`Enter ${field.field_label.toLowerCase()}`}
+          />
+        );
+      
+      case 'number':
+        return (
+          <input
+            type="number"
+            value={dynamicFormData[field.field_key] || ''}
+            onChange={(e) => handleDynamicFieldChange(field.field_key, e.target.value)}
+            disabled={!isEditing}
+            className={`w-full px-4 py-2 border ${
+              fieldError ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+            } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] ${
+              !isEditing ? 'bg-[#F8FAFC]' : ''
+            }`}
+            placeholder={`Enter ${field.field_label.toLowerCase()}`}
+          />
+        );
+      
+      case 'checkbox':
+        return (
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={dynamicFormData[field.field_key] || false}
+              onChange={(e) => handleDynamicFieldChange(field.field_key, e.target.checked)}
+              disabled={!isEditing}
+              className="w-4 h-4 text-[#2563EB] rounded border-[#CBD5E1] focus:ring-[#2563EB]"
+            />
+            <span className="text-sm text-[#334155]">Yes</span>
+          </div>
+        );
+      
+      case 'select':
+        return (
+          <select
+            value={dynamicFormData[field.field_key] || ''}
+            onChange={(e) => handleDynamicFieldChange(field.field_key, e.target.value)}
+            disabled={!isEditing}
+            className={`w-full px-4 py-2 border ${
+              fieldError ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+            } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] ${
+              !isEditing ? 'bg-[#F8FAFC]' : ''
+            }`}
+          >
+            <option value="">Select {field.field_label}</option>
+            {field.options?.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        );
+      
+      default: // text input
+        return (
+          <input
+            type="text"
+            value={dynamicFormData[field.field_key] || ''}
+            onChange={(e) => handleDynamicFieldChange(field.field_key, e.target.value)}
+            disabled={!isEditing}
+            className={`w-full px-4 py-2 border ${
+              fieldError ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+            } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] ${
+              !isEditing ? 'bg-[#F8FAFC]' : ''
+            }`}
+            placeholder={`Enter ${field.field_label.toLowerCase()}`}
+          />
+        );
+    }
   };
 
   const formatDate = (dateString) => {
@@ -535,6 +953,43 @@ const OrganizationProfile = () => {
                 )}
               </div>
             </div>
+
+            {/* Dynamic Fields Card */}
+            {dynamicFields.length > 0 && (
+              <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                  <div className="flex items-center space-x-2">
+                    <File className="w-5 h-5 text-[#2563EB]" />
+                    <h2 className="text-lg font-semibold text-[#0F172A]">Additional Information</h2>
+                  </div>
+                  <p className="text-xs text-[#64748B] mt-1">
+                    Country-specific fields for {dynamicFields[0]?.country}
+                  </p>
+                </div>
+
+                <div className="p-6">
+                  <div className="space-y-6">
+                    {dynamicFields.map((field) => (
+                      <div key={field.id} className="border-b border-[#E2E8F0] last:border-0 pb-4 last:pb-0">
+                        <div className="flex items-center space-x-2 mb-2">
+                          {getFieldIcon(field.field_type)}
+                          <label className="text-sm font-medium text-[#334155]">
+                            {field.field_label}
+                            {field.is_required && <span className="text-[#EF4444] ml-1">*</span>}
+                          </label>
+                        </div>
+                        
+                        {renderDynamicField(field)}
+                        
+                        {formErrors[field.field_key] && (
+                          <p className="text-xs text-[#EF4444] mt-1">{formErrors[field.field_key]}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Invoice Details Card */}
             <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden">

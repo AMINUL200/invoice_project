@@ -40,6 +40,7 @@ import AboutPage from "./pages/about/AboutPage";
 import ContactPage from "./pages/contact/ContactPage";
 import BlogPage from "./pages/blog/BlogPage";
 import BlogDetails from "./pages/blog/BlogDetails";
+import CountrySettings from "./pages/admin/country/CountrySettings";
 
 const App = () => {
   return (
@@ -64,6 +65,8 @@ const App = () => {
           <Route path="dashboard" index element={<AdminDashboard />} />
           <Route path="settings" element={<SystemSettingsPage />} />
           <Route path="invoice-template" element={<HandleInvoiceTemplate/>}/>
+          <Route path="country-settings" element={<CountrySettings/>}/>
+          <Route path="org-settings" element={<OrganizationSettings/>}/>
 
           {/* ---------- Start Organization or Companies handle super admin */}
           <Route path="companies" element={<CompaniesPage />} />
@@ -79,7 +82,6 @@ const App = () => {
           <Route path="subscriptions" element={<SubscriptionsPage />} />
           {/* --------- End Plans and Subscription ------- */}
 
-          <Route path="org-settings" element={<OrganizationSettings/>}/>
         </Route>
 
         <Route path="/org" element={<AdminLayout />}>

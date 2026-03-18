@@ -58,6 +58,12 @@ export const superAdminMenu = [
     icon: Settings,
     path: "/admin/org-settings",
   },
+  {
+    id: "country-settings",
+    label: "Country Settings",
+    icon: Settings,
+    path: "/admin/country-settings",
+  },
 ];
 
 /* ================= ORGANIZATION OWNER ================= */

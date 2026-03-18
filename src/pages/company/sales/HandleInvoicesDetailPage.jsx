@@ -17,16 +17,20 @@ import {
 } from "lucide-react";
 import { api } from "../../../utils/app";
 import toast from "react-hot-toast";
-import { getTemplateById } from "../../../component/templates/invoiceTemplates";
+import { getTemplateById, TEMPLATES } from "../../../component/templates/invoiceTemplates";
 import { useReactToPrint } from "react-to-print";
 
 const HandleInvoicesDetailPage = () => {
   const { id } = useParams();
+  const STORAGE_URL = import.meta.env.VITE_STORAGE_URL;
+  
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copySuccess, setCopySuccess] = useState(null);
   const [organizationSettings, setOrganizationSettings] = useState(null);
+  const [invoiceTemplate, setInvoiceTemplate] = useState(null);
+  const [availableTemplates, setAvailableTemplates] = useState([]);
   const navigate = useNavigate();
   const printRef = useRef();
 
@@ -54,26 +58,73 @@ const HandleInvoicesDetailPage = () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch both invoice details and organization settings in parallel
+      // Fetch invoice details, organization settings, and available templates in parallel
       const [
         invoiceResponse,
-        // ,settingsResponse
+        settingsResponse,
+        templatesResponse
       ] = await Promise.all([
         api.get(`/org/invoices/${id}`),
-        // api.get('/org/settings') // Get organization settings including template preference
+        api.get('/org/invoice-setting'), // Get organization settings including selected template
+        api.get('/org/invoice-templates') // Get all available templates
       ]);
 
       const invoiceData = invoiceResponse.data.data || invoiceResponse.data;
-      // const settingsData = settingsResponse.data.data || settingsResponse.data;
+      const settingsData = settingsResponse.data.data || settingsResponse.data;
+      const templatesData = templatesResponse.data.data || [];
 
       setInvoice(invoiceData);
-      // setOrganizationSettings(settingsData);
+      setOrganizationSettings(settingsData);
+      setAvailableTemplates(templatesData);
+
+      // Find and set the selected template
+      if (settingsData?.template) {
+        // If template object is directly available in settings
+        setInvoiceTemplate(settingsData.template);
+      } else if (settingsData?.invoice_template_id && templatesData.length > 0) {
+        // Find template by ID from the templates list
+        const selectedTemplate = templatesData.find(
+          t => t.id === settingsData.invoice_template_id
+        );
+        setInvoiceTemplate(selectedTemplate || null);
+      }
+
     } catch (error) {
       console.error("Error fetching data:", error);
       setError(error.message || "Failed to fetch invoice details");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to get template component by name or ID
+  const getTemplateComponent = () => {
+    if (!invoiceTemplate) {
+      // If no template found, return default template
+      return TEMPLATES.DEFAULT.component;
+    }
+
+    // Try to find template by name (case-insensitive)
+    const templateName = invoiceTemplate.name?.toLowerCase();
+    
+    // Map API template names to your component names
+    const templateMap = {
+      'default': TEMPLATES.DEFAULT,
+      'classic': TEMPLATES.CLASSIC,
+      'modern': TEMPLATES.MODERN,
+      'minimal': TEMPLATES.MINIMAL,
+      'professional': TEMPLATES.PROFESSIONAL
+    };
+
+    // Try to find by name first
+    const matchedTemplate = templateMap[templateName];
+    if (matchedTemplate) {
+      return matchedTemplate.component;
+    }
+
+    // If not found by name, try by ID
+    const templateById = getTemplateById(invoiceTemplate.id);
+    return templateById?.component || TEMPLATES.DEFAULT.component;
   };
 
   const handleCopy = (text, field) => {
@@ -172,12 +223,8 @@ const HandleInvoicesDetailPage = () => {
     return config[status] || config.draft;
   };
 
-  // Get the appropriate template component
-  const templateId =
-    organizationSettings?.invoice_template_id ||
-    Number(localStorage.getItem("invoice_template")) ||
-    0;
-  const TemplateComponent = getTemplateById(templateId).component;
+  // Get the template component
+  const TemplateComponent = getTemplateComponent();
 
   if (loading) {
     return (
@@ -200,7 +247,7 @@ const HandleInvoicesDetailPage = () => {
           </p>
           <p className="text-[#64748B] mb-4">{error}</p>
           <button
-            onClick={() => (window.location.href = "/admin/invoices")}
+            onClick={() => navigate("/org/sales/invoices")}
             className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg text-sm font-medium"
           >
             Go Back to Invoices
@@ -241,15 +288,23 @@ const HandleInvoicesDetailPage = () => {
                   </span>
 
                   {/* Template indicator */}
-                  {organizationSettings?.invoice_template_id && (
+                  {invoiceTemplate && (
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-[#F1F5F9] text-[#64748B] flex items-center gap-1">
                       <Layout className="w-3 h-3" />
-                      {
-                        getTemplateById(
-                          organizationSettings.invoice_template_id,
-                        ).name
-                      }
+                      {invoiceTemplate.name}
                     </span>
+                  )}
+
+                  {/* Show preview image if available */}
+                  {invoiceTemplate?.preview_image && (
+                    <button
+                      onClick={() => window.open(`${STORAGE_URL}/${invoiceTemplate.preview_image}`, '_blank')}
+                      className="px-2 py-1 text-xs font-medium rounded-full bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0] transition-colors flex items-center gap-1"
+                      title="View template preview"
+                    >
+                      <FileText className="w-3 h-3" />
+                      Preview
+                    </button>
                   )}
                 </div>
                 <p className="text-sm text-[#64748B] mt-1">
@@ -297,8 +352,6 @@ const HandleInvoicesDetailPage = () => {
 
       {/* Main Content */}
       <main className="p-8">
-       
-
         {/* Dynamic Template Rendering */}
         <div ref={printRef}>
           <TemplateComponent

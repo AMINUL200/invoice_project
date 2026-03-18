@@ -33,10 +33,9 @@ import {
   StarOff,
 } from "lucide-react";
 import { api } from "../../../utils/app";
-import { TEMPLATE_PREVIEWS, TEMPLATES } from "../../../config/invoiceTemplates";
 
 const HandleOrgSettings = () => {
-  const STORAGE_URL = import.meta.env.VITE_STORAGE_URL
+  const STORAGE_URL = import.meta.env.VITE_STORAGE_URL;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("email");
@@ -81,9 +80,11 @@ const HandleOrgSettings = () => {
   const [paymentErrors, setPaymentErrors] = useState({});
 
   // Invoice Template settings state
-  const [selectedTemplate, setSelectedTemplate] = useState(
-    localStorage.getItem("invoice_template") || 1,
-  );
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [invoicePrefix, setInvoicePrefix] = useState("");
+  const [templateLoading, setTemplateLoading] = useState(false);
+  const [selectedTemplateData, setSelectedTemplateData] = useState(null);
 
   // Banks States
   const [bankAccounts, setBankAccounts] = useState([]);
@@ -115,25 +116,15 @@ const HandleOrgSettings = () => {
 
   const [bankErrors, setBankErrors] = useState({});
 
-  const handleTemplateSelect = (id) => {
-    setSelectedTemplate(id);
-    localStorage.setItem("invoice_template", id);
-    setApiSuccess("Invoice template updated");
-  };
-
-  const handleViewTemplate = (templateId, e) => {
-    e.stopPropagation();
-    const previewUrl = TEMPLATE_PREVIEWS[templateId];
-    if (previewUrl) {
-      window.open(previewUrl, "_blank");
-    }
-  };
-
   // Fetch organization settings
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await Promise.all([fetchSettings(), fetchBankAccounts()]);
+        await Promise.all([
+          fetchSettings(),
+          fetchBankAccounts(),
+          fetchTemplates(), // ✅ handles both
+        ]);
       } catch (error) {
         console.error("Error in initial data fetch:", error);
       }
@@ -181,6 +172,91 @@ const HandleOrgSettings = () => {
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const response = await api.get("/org/invoice-templates");
+
+      if (response.data?.success && response.data?.data) {
+        const templatesData = response.data.data;
+
+        setTemplates(templatesData);
+
+        // ✅ IMPORTANT: pass templates here
+        await fetchSelectedTemplate(templatesData);
+      }
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      setApiError("Failed to fetch invoice templates");
+    }
+  };
+
+  const fetchSelectedTemplate = async (templatesList = []) => {
+    try {
+      const response = await api.get("/org/invoice-setting");
+
+      if (response.data?.success && response.data?.data) {
+        const data = response.data.data;
+
+        setSelectedTemplate(data.invoice_template_id);
+        setInvoicePrefix(data.invoice_prefix || "");
+        setSelectedTemplateData(data.template);
+      } else {
+        // ✅ fallback if no data
+        if (templatesList.length > 0) {
+          const firstTemplate = templatesList[0];
+
+          setSelectedTemplate(firstTemplate.id);
+          setSelectedTemplateData(firstTemplate);
+          setInvoicePrefix(firstTemplate.slug || "");
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching selected template:", error);
+
+      // ✅ fallback if API fails
+      if (templatesList.length > 0) {
+        const firstTemplate = templatesList[0];
+
+        setSelectedTemplate(firstTemplate.id);
+        setSelectedTemplateData(firstTemplate);
+        setInvoicePrefix(firstTemplate.slug || "");
+      }
+    }
+  };
+
+  const handleTemplateSelect = async (templateId, templateName) => {
+    try {
+      setTemplateLoading(true);
+      setApiError(null);
+
+      const response = await api.post("/org/invoice-setting", {
+        invoice_template_id: templateId,
+        invoice_prefix: templateName.toLowerCase(), // You can customize this logic
+      });
+
+      if (response.data?.success) {
+        setSelectedTemplate(templateId);
+        setApiSuccess("Invoice template updated successfully");
+        // Refresh selected template data
+        await fetchSelectedTemplate();
+      }
+    } catch (error) {
+      console.error("Error updating template:", error);
+      setApiError(
+        error.response?.data?.message || "Failed to update invoice template",
+      );
+    } finally {
+      setTemplateLoading(false);
+    }
+  };
+
+  const handleViewTemplate = (previewImage, e) => {
+    e.stopPropagation();
+    if (previewImage) {
+      window.open(`${STORAGE_URL}/${previewImage}`, "_blank");
+    }
+  };
+
   const fetchBankAccounts = async () => {
     try {
       const res = await api.get("/org/bank-accounts");
@@ -188,7 +264,6 @@ const HandleOrgSettings = () => {
       if (res.data?.data?.data) {
         setBankAccounts(res.data.data.data);
       } else if (res.data?.data) {
-        // Handle case where data is directly in res.data.data
         setBankAccounts(Array.isArray(res.data.data) ? res.data.data : []);
       }
     } catch (error) {
@@ -304,7 +379,7 @@ const HandleOrgSettings = () => {
 
   // Handle Edit Bank
   const handleEditBank = (bank) => {
-    setShowBankModal(true)
+    setShowBankModal(true);
     setEditingBank(bank);
     setBankForm({
       id: bank.id,
@@ -327,9 +402,7 @@ const HandleOrgSettings = () => {
       status: bank.status || "active",
     });
     if (bank.qr_code) {
-      setBankImagePreview(
-        `${STORAGE_URL}/${bank.qr_code}`,
-      );
+      setBankImagePreview(`${STORAGE_URL}/${bank.qr_code}`);
     }
     setShowBankModal(true);
   };
@@ -345,7 +418,6 @@ const HandleOrgSettings = () => {
     try {
       const formData = new FormData();
 
-      // Append all bank fields
       formData.append("account_name", bankForm.account_name);
       formData.append("bank_name", bankForm.bank_name);
       formData.append("account_holder_name", bankForm.account_holder_name);
@@ -363,14 +435,12 @@ const HandleOrgSettings = () => {
       formData.append("is_default", bankForm.is_default ? "1" : "0");
       formData.append("status", bankForm.status);
 
-      // Append QR code if new file is selected
       if (bankImageFile) {
         formData.append("qr_code", bankImageFile);
       }
 
       let response;
       if (bankForm.id) {
-        // Update existing bank
         response = await api.post(
           `/org/bank-accounts/${bankForm.id}`,
           formData,
@@ -380,7 +450,6 @@ const HandleOrgSettings = () => {
         );
         setApiSuccess("Bank account updated successfully");
       } else {
-        // Create new bank
         response = await api.post("/org/bank-accounts", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -1148,22 +1217,6 @@ const HandleOrgSettings = () => {
                 </div>
               </div>
             </div>
-
-            <div className="mt-6 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0] p-4">
-              <div className="flex items-start space-x-3">
-                <AlertCircle className="w-5 h-5 text-[#2563EB] flex-shrink-0" />
-                <div>
-                  <h4 className="text-sm font-medium text-[#0F172A]">
-                    About Email Settings
-                  </h4>
-                  <p className="text-xs text-[#64748B] mt-1">
-                    These settings are used for sending invoices, payment
-                    receipts, and notifications to your customers. Make sure to
-                    use a reliable SMTP provider for better deliverability.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
@@ -1344,31 +1397,71 @@ const HandleOrgSettings = () => {
         {/* Invoice Template Tab */}
         {activeTab === "invoice" && (
           <div className="max-w-6xl">
-            <h2 className="text-lg font-semibold text-[#0F172A] mb-4">
-              Invoice Templates
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-lg font-semibold text-[#0F172A]">
+                  Invoice Templates
+                </h2>
+                {selectedTemplateData && (
+                  <p className="text-sm text-[#64748B] mt-1">
+                    Currently selected:{" "}
+                    <span className="font-medium text-[#2563EB]">
+                      {selectedTemplateData.name}
+                    </span>
+                  </p>
+                )}
+                {!selectedTemplateData && templates.length > 0 && (
+                  <p className="text-xs text-orange-500 mt-1">
+                    No template selected. Default applied.
+                  </p>
+                )}
+              </div>
+              {templateLoading && (
+                <div className="flex items-center space-x-2 text-[#64748B]">
+                  <div className="w-4 h-4 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm">Updating template...</span>
+                </div>
+              )}
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Object.values(TEMPLATES).map((template) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {templates.map((template) => (
                 <div
                   key={template.id}
                   className={`group relative border rounded-xl overflow-hidden cursor-pointer transition ${
-                    selectedTemplate == template.id
+                    selectedTemplate === template.id
                       ? "border-[#2563EB] ring-2 ring-[#2563EB]/20"
                       : "border-[#E2E8F0] hover:border-[#2563EB]/50"
                   }`}
-                  onClick={() => handleTemplateSelect(template.id)}
+                  onClick={() =>
+                    handleTemplateSelect(template.id, template.name)
+                  }
                 >
-                  <div className="relative">
-                    <img
-                      src={TEMPLATE_PREVIEWS[template.id]}
-                      alt={template.name}
-                      className="w-full h-56 object-cover transition group-hover:scale-105"
-                    />
+                  <div className="relative aspect-[4/4] bg-[#F8FAFC]">
+                    {template.preview_image ? (
+                      <img
+                        src={`${STORAGE_URL}/${template.preview_image}`}
+                        alt={template.name}
+                        className="w-full h-full object-cover transition group-hover:scale-105"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src =
+                            "https://via.placeholder.com/300x400?text=No+Preview";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-sm text-[#64748B]">
+                          No preview available
+                        </span>
+                      </div>
+                    )}
 
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <button
-                        onClick={(e) => handleViewTemplate(template.id, e)}
+                        onClick={(e) =>
+                          handleViewTemplate(template.preview_image, e)
+                        }
                         className="p-3 bg-white rounded-full hover:bg-[#2563EB] group/btn transition-colors"
                         title="View full size"
                       >
@@ -1376,21 +1469,30 @@ const HandleOrgSettings = () => {
                       </button>
                     </div>
 
-                    {selectedTemplate == template.id && (
+                    {selectedTemplate === template.id && (
                       <div className="absolute top-2 right-2">
-                        <CheckCircle className="w-5 h-5 text-[#22C55E] bg-white rounded-full" />
+                        <CheckCircle className="w-6 h-6 text-[#22C55E] bg-white rounded-full" />
                       </div>
                     )}
                   </div>
 
-                  <div className="p-3 flex items-center justify-between bg-white">
-                    <span className="text-sm font-medium text-[#0F172A]">
+                  <div className="p-4 bg-white">
+                    <h3 className="text-sm font-medium text-[#0F172A]">
                       {template.name}
-                    </span>
+                    </h3>
+                    <p className="text-xs text-[#64748B] mt-1 capitalize">
+                      {template.slug}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
+
+            {templates.length === 0 && (
+              <div className="text-center py-12 bg-white rounded-xl border border-[#E2E8F0]">
+                <p className="text-[#64748B]">No templates available</p>
+              </div>
+            )}
           </div>
         )}
 

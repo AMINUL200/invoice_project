@@ -1,12 +1,30 @@
-import React, { useState } from "react";
+// pages/RegisterPage.jsx
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserPlus, ArrowLeft, Building2, Mail, Phone, MapPin, User, Lock, FileText } from "lucide-react";
+import {
+  UserPlus,
+  ArrowLeft,
+  Building2,
+  Mail,
+  Phone,
+  MapPin,
+  User,
+  Lock,
+  FileText,
+  Globe,
+  Search,
+  ChevronDown,
+  X
+} from "lucide-react";
 import CustomInput from "../../component/form/CustomInput";
 import toast from "react-hot-toast";
 import { api } from "../../utils/app";
 
 const RegisterPage = () => {
+  const [countries, setCountries] = useState([]);
+  const [loadingCountries, setLoadingCountries] = useState(true);
   const [formData, setFormData] = useState({
+    country: "", // This will store the country slug
     company_name: "",
     legal_name: "",
     email: "",
@@ -18,9 +36,69 @@ const RegisterPage = () => {
     owner_password: "",
     owner_phone: "",
   });
+  
+  // Country dropdown state
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const countryDropdownRef = useRef(null);
+  
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Fetch countries on component mount
+  useEffect(() => {
+    fetchCountries();
+  }, []);
+
+  // Handle click outside to close country dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target)) {
+        setIsCountryDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const fetchCountries = async () => {
+    setLoadingCountries(true);
+    try {
+      const response = await api.get("/countries-active");
+      if (response.data.success) {
+        setCountries(response.data.data);
+      } else {
+        toast.error("Failed to load countries");
+      }
+    } catch (error) {
+      console.error("Error fetching countries:", error);
+      toast.error("Failed to load countries");
+    } finally {
+      setLoadingCountries(false);
+    }
+  };
+
+  // Filter countries based on search
+  const filteredCountries = countries.filter(country =>
+    country.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) ||
+    country.slug.toLowerCase().includes(countrySearchTerm.toLowerCase())
+  );
+
+  const handleCountrySelect = (country) => {
+    setSelectedCountry(country);
+    setFormData(prev => ({
+      ...prev,
+      country: country.slug // Store the slug in formData
+    }));
+    setCountrySearchTerm("");
+    setIsCountryDropdownOpen(false);
+    // Clear error when country is selected
+    if (errors.country) {
+      setErrors(prev => ({ ...prev, country: "" }));
+    }
+  };
 
   // Handle input change
   const handleChange = (e) => {
@@ -41,6 +119,11 @@ const RegisterPage = () => {
   // Validate form
   const validateForm = () => {
     const newErrors = {};
+
+    // Country Validation
+    if (!formData.country) {
+      newErrors.country = "Please select a country";
+    }
 
     // Company Details Validation
     if (!formData.company_name.trim()) {
@@ -127,7 +210,17 @@ const RegisterPage = () => {
       }
     } catch (error) {
       console.error("Registration failed:", error);
-      toast.error(error.response?.data?.message || error.message || "Registration failed!");
+      
+      // Handle validation errors from backend
+      if (error.response?.data?.errors) {
+        const backendErrors = {};
+        Object.keys(error.response.data.errors).forEach(key => {
+          backendErrors[key] = error.response.data.errors[key][0];
+        });
+        setErrors(backendErrors);
+      } else {
+        toast.error(error.response?.data?.message || error.message || "Registration failed!");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -170,6 +263,110 @@ const RegisterPage = () => {
 
           {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Country Selection */}
+            <div>
+              <h3 className="text-lg font-semibold text-[#0F172A] mb-4 pb-2 border-b border-[#E2E8F0]">
+                Select Country
+              </h3>
+              <div ref={countryDropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                  className={`w-full px-4 py-3 border ${
+                    errors.country ? 'border-[#EF4444]' : 'border-[#CBD5E1]'
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] flex items-center justify-between bg-white`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className={`w-5 h-5 ${selectedCountry ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
+                    <span className={selectedCountry ? 'text-[#0F172A] font-medium' : 'text-[#94A3B8]'}>
+                      {selectedCountry ? selectedCountry.name : 'Select your country...'}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-[#64748B] transition-transform ${isCountryDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isCountryDropdownOpen && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg max-h-96 overflow-hidden">
+                    {/* Search input */}
+                    <div className="p-2 border-b border-[#E2E8F0]">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B]" />
+                        <input
+                          type="text"
+                          placeholder="Search countries..."
+                          value={countrySearchTerm}
+                          onChange={(e) => setCountrySearchTerm(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2 border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] text-sm"
+                          autoFocus
+                        />
+                        {countrySearchTerm && (
+                          <button
+                            type="button"
+                            onClick={() => setCountrySearchTerm("")}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-[#F1F5F9] rounded-full"
+                          >
+                            <X className="w-3 h-3 text-[#64748B]" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Countries list */}
+                    <div className="max-h-60 overflow-y-auto">
+                      {loadingCountries ? (
+                        <div className="px-4 py-3 text-sm text-[#64748B] text-center">
+                          Loading countries...
+                        </div>
+                      ) : filteredCountries.length === 0 ? (
+                        <div className="px-4 py-3 text-sm text-[#64748B] text-center">
+                          No countries found
+                        </div>
+                      ) : (
+                        filteredCountries.map((country) => (
+                          <button
+                            key={country.slug}
+                            type="button"
+                            onClick={() => handleCountrySelect(country)}
+                            className={`w-full px-4 py-2.5 text-left hover:bg-[#F8FAFC] transition-colors flex items-center gap-2 ${
+                              selectedCountry?.slug === country.slug ? 'bg-[#EFF6FF]' : ''
+                            }`}
+                          >
+                            <Globe className={`w-4 h-4 ${
+                              selectedCountry?.slug === country.slug ? 'text-[#2563EB]' : 'text-[#64748B]'
+                            }`} />
+                            <div>
+                              <span className={`text-sm ${
+                                selectedCountry?.slug === country.slug ? 'font-medium text-[#2563EB]' : 'text-[#0F172A]'
+                              }`}>
+                                {country.name}
+                              </span>
+                              <span className="text-xs text-[#64748B] ml-2">
+                                ({country.slug})
+                              </span>
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Footer with count */}
+                    <div className="px-4 py-2 border-t border-[#E2E8F0] bg-[#F8FAFC]">
+                      <p className="text-xs text-[#64748B]">
+                        {filteredCountries.length} countries found
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {errors.country && (
+                  <p className="mt-2 text-sm text-[#EF4444] flex items-center">
+                    <span className="inline-block w-1 h-1 bg-[#EF4444] rounded-full mr-2"></span>
+                    {errors.country}
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Company Details Section */}
             <div>
               <h3 className="text-lg font-semibold text-[#0F172A] mb-4 pb-2 border-b border-[#E2E8F0]">
