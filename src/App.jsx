@@ -41,6 +41,7 @@ import ContactPage from "./pages/contact/ContactPage";
 import BlogPage from "./pages/blog/BlogPage";
 import BlogDetails from "./pages/blog/BlogDetails";
 import CountrySettings from "./pages/admin/country/CountrySettings";
+import PaymentSuccess from "./pages/payment_success/PaymentSuccess";
 
 const App = () => {
   return (
@@ -51,6 +52,7 @@ const App = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/payment-success" element={<PaymentSuccess/>}/>
 
         <Route element={<AppLayout />}>
           <Route index path="/" element={<LandingPage />} />
